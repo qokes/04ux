@@ -3,64 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>04UX.COM // LENOX JG ELITE</title>
+    <title>04UX.COM // LENOX JG ELITE SYSTEM</title>
     <link rel="manifest" href="manifest.json">
     <script src="/socket.io/socket.io.js"></script>
     <style>
         canvas#fishCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 1; pointer-events: none; background: #02040a;
+            z-index: 1; pointer-events: none; background: radial-gradient(circle at center, #060913 0%, #010204 100%);
         }
         @keyframes pulseGlow {
-            0% { box-shadow: 0 0 15px rgba(212,175,55,0.2); }
-            50% { box-shadow: 0 0 35px rgba(212,175,55,0.6); }
-            100% { box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+            0% { box-shadow: 0 0 20px rgba(212,175,55,0.25), inset 0 0 15px rgba(212,175,55,0.1); }
+            50% { box-shadow: 0 0 45px rgba(212,175,55,0.65), inset 0 0 25px rgba(212,175,55,0.3); }
+            100% { box-shadow: 0 0 20px rgba(212,175,55,0.25), inset 0 0 15px rgba(212,175,55,0.1); }
         }
         body {
-            background-color: #02040a; color: #f8fafc;
+            background-color: #010204; color: #f8fafc;
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0; padding: 6px; display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; box-sizing: border-box; overflow-x: hidden;
         }
         .elite-card {
             max-width: 390px; width: 100%;
-            background: rgba(6, 9, 18, 0.94); backdrop-filter: blur(25px);
-            padding: 10px; border-radius: 14px; border: 1.5px solid rgba(212, 175, 55, 0.6);
+            background: rgba(4, 7, 15, 0.92); backdrop-filter: blur(30px);
+            padding: 12px; border-radius: 16px; border: 1.5px solid rgba(212, 175, 55, 0.7);
             animation: pulseGlow 4s infinite; box-sizing: border-box; position: relative; z-index: 2;
         }
         .top-bar {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 6px; margin-bottom: 8px;
         }
-        .brand { font-size: 0.75rem; font-weight: 900; color: #fef08a; letter-spacing: 1px; }
+        .brand { font-size: 0.8rem; font-weight: 900; color: #fef08a; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(254,240,138,0.4); }
         .lang-select {
             background: #020307; border: 1px solid #d4af37; color: #fef08a;
             padding: 2px 4px; border-radius: 4px; font-size: 0.55rem; outline: none; cursor: pointer;
         }
         .balance-badge {
             font-size: 0.6rem; color: #22c55e; font-weight: bold;
-            background: rgba(34,197,94,0.1); padding: 2px 4px; border-radius: 4px;
-            border: 1px solid rgba(34,197,94,0.3);
+            background: rgba(34,197,94,0.12); padding: 2px 6px; border-radius: 6px;
+            border: 1px solid rgba(34,197,94,0.35);
         }
         .status-pill {
             display: flex; align-items: center; gap: 3px;
-            font-size: 0.5rem; background: #0b0f19; padding: 2px 4px;
+            font-size: 0.5rem; background: #0b0f19; padding: 2px 5px;
             border-radius: 20px; border: 1px solid #1e293b;
         }
         .led-indicator {
             width: 5px; height: 5px; border-radius: 50%;
             background-color: #ef4444; box-shadow: 0 0 5px #ef4444;
         }
-        .led-indicator.online { background-color: #22c55e; box-shadow: 0 0 7px #22c55e; }
+        .led-indicator.online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
         
         .input-cyber {
-            background: #04070e; border: 1.5px solid #1e293b; border-radius: 8px;
+            background: #03050a; border: 1.5px solid #1e293b; border-radius: 8px;
             padding: 8px; font-size: 0.8rem; color: #fef08a; width: 100%;
-            box-sizing: border-box; text-align: center; margin-bottom: 5px; outline: none;
+            box-sizing: border-box; text-align: center; margin-bottom: 6px; outline: none;
+            transition: border-color 0.3s;
         }
-        .input-cyber:focus { border-color: #d4af37; }
+        .input-cyber:focus { border-color: #d4af37; box-shadow: 0 0 8px rgba(212,175,55,0.3); }
 
-        .btn-container { display: flex; gap: 5px; margin-bottom: 5px; }
+        .btn-container { display: flex; gap: 6px; margin-bottom: 6px; }
         .btn-master {
             flex: 1; padding: 9px; border-radius: 8px; border: none;
             font-weight: 800; font-size: 0.65rem; cursor: pointer;
@@ -72,64 +73,65 @@
             font-weight: 800; font-size: 0.65rem; cursor: pointer;
             background: #0f172a; color: #fef08a;
         }
-        .btn-secondary-row { display: flex; gap: 5px; margin-bottom: 5px; }
+        .btn-secondary-row { display: flex; gap: 6px; margin-bottom: 6px; }
         .btn-action {
             flex: 1; padding: 7px; border-radius: 8px; border: 1px solid #1e293b;
             font-weight: bold; font-size: 0.6rem; cursor: pointer; background: #0f172a; color: #94a3b8; text-align: center;
         }
+        .btn-action:hover { border-color: #d4af37; color: #fef08a; }
         
         #chatPanel {
-            display: none; background: #04070e; border: 1px solid rgba(212,175,55,0.3);
-            border-radius: 10px; padding: 6px; margin-top: 5px;
+            display: none; background: #03050a; border: 1px solid rgba(212,175,55,0.35);
+            border-radius: 10px; padding: 8px; margin-top: 6px;
         }
         .chat-header-info {
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.6rem; color: #fef08a; margin-bottom: 3px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 2px;
+            font-size: 0.6rem; color: #fef08a; margin-bottom: 4px; border-bottom: 1px dashed rgba(255,255,255,0.12); padding-bottom: 3px;
         }
         .config-row {
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.6rem; color: #94a3b8; margin-bottom: 5px; background: #080c16; padding: 3px 5px; border-radius: 5px;
+            font-size: 0.6rem; color: #94a3b8; margin-bottom: 6px; background: #060a14; padding: 4px 6px; border-radius: 6px;
         }
         .timer-select {
             background: #020307; border: 1px solid #334155; color: #fef08a;
             padding: 2px; border-radius: 4px; font-size: 0.6rem; outline: none;
         }
         .chat-screen {
-            height: 110px; overflow-y: auto; background: #020307; border: 1px solid #111827;
-            padding: 5px; font-size: 0.65rem; border-radius: 6px; margin-bottom: 5px; color: #cbd5e1; display: none;
+            height: 120px; overflow-y: auto; background: #020307; border: 1px solid #111827;
+            padding: 6px; font-size: 0.65rem; border-radius: 6px; margin-bottom: 6px; color: #cbd5e1; display: none;
         }
-        .msg-bubble { padding: 3px 6px; border-radius: 5px; max-width: 85%; word-break: break-word; margin-bottom: 3px; }
+        .msg-bubble { padding: 4px 7px; border-radius: 6px; max-width: 85%; word-break: break-word; margin-bottom: 4px; }
         .msg-incoming { background: #1e293b; color: #f8fafc; }
         .msg-outgoing { background: #065f46; color: #ecfdf5; margin-left: auto; }
         
-        .chat-actions-row { display: flex; gap: 3px; margin-bottom: 3px; }
+        .chat-actions-row { display: flex; gap: 4px; margin-bottom: 4px; }
         .btn-read { background: #3b82f6; color: white; border: none; padding: 5px; border-radius: 5px; font-size: 0.6rem; font-weight: bold; cursor: pointer; flex: 1; }
         .btn-mailbox { background: #8b5cf6; color: white; border: none; padding: 5px; border-radius: 5px; font-size: 0.6rem; font-weight: bold; cursor: pointer; flex: 1; }
         .btn-wipe-chat { background: #ef4444; color: white; border: none; padding: 5px; border-radius: 5px; font-size: 0.6rem; font-weight: bold; cursor: pointer; flex: 1; }
 
-        .chat-input-row { display: flex; gap: 3px; margin-bottom: 3px; }
+        .chat-input-row { display: flex; gap: 4px; margin-bottom: 4px; }
         .chat-txt {
             flex: 1; background: #020307; border: 1px solid #334155; color: white;
             padding: 5px; border-radius: 5px; font-size: 0.7rem; outline: none;
         }
         .btn-send {
-            background: #10b981; color: white; border: none; padding: 5px 8px;
+            background: #10b981; color: white; border: none; padding: 5px 9px;
             border-radius: 5px; font-weight: bold; font-size: 0.7rem; cursor: pointer;
         }
 
         .recharge-box {
-            background: #04070e; border: 1px dashed #d4af37; border-radius: 8px; padding: 6px; margin-top: 5px;
+            background: #03050a; border: 1px dashed #d4af37; border-radius: 8px; padding: 8px; margin-top: 6px;
         }
         .package-select {
             width: 100%; background: #020307; border: 1px solid #334155; color: #fef08a;
-            padding: 4px; border-radius: 5px; font-size: 0.65rem; margin-bottom: 3px; outline: none;
+            padding: 5px; border-radius: 5px; font-size: 0.65rem; margin-bottom: 4px; outline: none;
         }
-        .wallet-text { font-size: 0.45rem; color: #94a3b8; word-break: break-all; margin-bottom: 3px; text-align: center; }
+        .wallet-text { font-size: 0.48rem; color: #94a3b8; word-break: break-all; margin-bottom: 4px; text-align: center; }
         .btn-recharge {
             background: linear-gradient(135deg, #d4af37, #b8860b); color: #02040a;
-            width: 100%; padding: 6px; border-radius: 5px; border: none; font-weight: bold; font-size: 0.65rem; cursor: pointer;
+            width: 100%; padding: 7px; border-radius: 5px; border: none; font-weight: bold; font-size: 0.65rem; cursor: pointer;
         }
-        .footer-tag { text-align: center; font-size: 0.45rem; color: #64748b; margin-top: 5px; letter-spacing: 0.5px; }
+        .footer-tag { text-align: center; font-size: 0.45rem; color: #64748b; margin-top: 6px; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
@@ -165,7 +167,7 @@
     
     <div class="btn-secondary-row">
         <button class="btn-action" id="btnNfcText" onclick="connectNfcPin()">NFC LINK</button>
-        <button class="btn-action" id="btnInstallText" onclick="installPWA()">📲 APP</button>
+        <button class="btn-action" id="btnInstallText" onclick="installPWA()">📲 04UX.COM</button>
         <button class="btn-action" id="btnManualText" onclick="openManual()">📖 MANUAL</button>
     </div>
 
@@ -184,7 +186,7 @@
             </select>
         </div>
         
-        <div style="margin-bottom: 3px;">
+        <div style="margin-bottom: 4px;">
             <input type="text" id="targetUxInput" class="chat-txt" placeholder="Target UX (Mailbox)" autocomplete="off" inputmode="numeric" style="width: 100%;">
         </div>
 
@@ -203,7 +205,7 @@
     </div>
 
     <div class="recharge-box" id="rechargeSection">
-        <div id="rechargeTitle" style="font-size: 0.55rem; color: #fef08a; font-weight: bold; text-align: center; margin-bottom: 2px;">UX RECHARGE (REAL BTC)</div>
+        <div id="rechargeTitle" style="font-size: 0.55rem; color: #fef08a; font-weight: bold; text-align: center; margin-bottom: 3px;">UX RECHARGE (REAL BTC)</div>
         <select id="packageSelect" class="package-select">
             <option value="250">250 UX - $2.99 USD</option>
             <option value="500">500 UX - $3.99 USD</option>
@@ -212,8 +214,8 @@
             <option value="10000">10000 UX - $35.99 USD</option>
             <option value="100000">100000 UX - $499.00 USD</option>
         </select>
-        <div class="wallet-text">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</div>
-        <input type="text" id="txidInput" class="input-cyber" placeholder="BLOCKCHAIN TXID" autocomplete="off" style="font-size: 0.55rem; margin-bottom: 3px;">
+        <div class="wallet-text">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+        <input type="text" id="txidInput" class="input-cyber" placeholder="BLOCKCHAIN TXID" autocomplete="off" style="font-size: 0.55rem; margin-bottom: 4px;">
         <button class="btn-recharge" id="btnConfirmRechargeText" onclick="processRecharge()">CONFIRM RECHARGE</button>
     </div>
 
@@ -224,7 +226,7 @@
     const translations = {
         en: {
             userInput: "UX NUMBER", passInput: "PIN CODE", btnRegisterText: "REGISTER (+20 UX)", btnLoginText: "LOGIN",
-            btnNfcText: "NFC LINK", btnInstallText: "📲 APP", btnManualText: "📖 MANUAL", meshLabel: "🛡️ 04UX MESH",
+            btnNfcText: "NFC LINK", btnInstallText: "📲 04UX.COM", btnManualText: "📖 MANUAL", meshLabel: "🛡️ 04UX MESH",
             timerLabel: "TIME LIMIT:", targetPlaceholder: "Target UX (Mailbox)", btnReadText: "👁️ CHAT",
             btnMailboxText: "📬 MAILBOX", btnWipeText: "🗑️ CLEAR", chatInputMsg: "Message (1 UX)...", btnSendText: "SEND",
             rechargeTitle: "UX RECHARGE (REAL BTC)", txidInput: "BLOCKCHAIN TXID", btnConfirmRechargeText: "CONFIRM RECHARGE",
@@ -233,7 +235,7 @@
         },
         es: {
             userInput: "NÚMERO UX", passInput: "PIN CLAVE", btnRegisterText: "REGISTRARSE (+20 UX)", btnLoginText: "INICIAR",
-            btnNfcText: "ENLACE NFC", btnInstallText: "📲 APP", btnManualText: "📖 MANUAL", meshLabel: "🛡️ 04UX MESH",
+            btnNfcText: "ENLACE NFC", btnInstallText: "📲 04UX.COM", btnManualText: "📖 MANUAL", meshLabel: "🛡️ 04UX MESH",
             timerLabel: "TIEMPO:", targetPlaceholder: "UX Destino (Buzón)", btnReadText: "👁️ CHAT",
             btnMailboxText: "📬 BUZÓN", btnWipeText: "🗑️ LIMPIAR", chatInputMsg: "Mensaje (1 UX)...", btnSendText: "ENVIAR",
             rechargeTitle: "RECARGA UX (BTC REAL)", txidInput: "TXID BLOCKCHAIN", btnConfirmRechargeText: "CONFIRMAR",
@@ -242,7 +244,7 @@
         },
         ru: {
             userInput: "UX НОМЕР", passInput: "PIN КОД", btnRegisterText: "РЕГИСТРАЦИЯ", btnLoginText: "ВОЙТИ",
-            btnNfcText: "NFC ССЫЛКА", btnInstallText: "📲 ПРИЛ.", btnManualText: "📖 ИНСТРУКЦИЯ", meshLabel: "🛡️ 04UX СЕТЬ",
+            btnNfcText: "NFC ССЫЛКА", btnInstallText: "📲 04UX.COM", btnManualText: "📖 ИНСТРУКЦИЯ", meshLabel: "🛡️ 04UX СЕТЬ",
             timerLabel: "ВРЕМЯ:", targetPlaceholder: "Цель UX (Ящик)", btnReadText: "👁️ ЧАТ",
             btnMailboxText: "📬 ЯЩИК", btnWipeText: "🗑️ ОЧИСТИТЬ", chatInputMsg: "Сообщение (1 UX)...", btnSendText: "ОТПРАВИТЬ",
             rechargeTitle: "ПОПОЛНЕНИЕ UX (BTC)", txidInput: "TXID ТРАНЗАКЦИИ", btnConfirmRechargeText: "ПОДТВЕРДИТЬ",
@@ -251,7 +253,7 @@
         },
         fr: {
             userInput: "NUMÉRO UX", passInput: "CODE PIN", btnRegisterText: "ENREGISTRER", btnLoginText: "CONNEXION",
-            btnNfcText: "LIEN NFC", btnInstallText: "📲 APPLI", btnManualText: "📖 MANUEL", meshLabel: "🛡️ 04UX MESH",
+            btnNfcText: "LIEN NFC", btnInstallText: "📲 04UX.COM", btnManualText: "📖 MANUEL", meshLabel: "🛡️ 04UX MESH",
             timerLabel: "TEMPS:", targetPlaceholder: "UX Cible (Boîte)", btnReadText: "👁️ CHAT",
             btnMailboxText: "📬 BOÎTE", btnWipeText: "🗑️ EFFACER", chatInputMsg: "Message (1 UX)...", btnSendText: "ENVOYER",
             rechargeTitle: "RECHARGE UX (BTC)", txidInput: "TXID BLOCKCHAIN", btnConfirmRechargeText: "CONFIRMER",
@@ -260,7 +262,7 @@
         },
         ar: {
             userInput: "رقم UX", passInput: "رمز PIN", btnRegisterText: "تسجيل", btnLoginText: "دخول",
-            btnNfcText: "رابط NFC", btnInstallText: "📲 تطبيق", btnManualText: "📖 الدليل", meshLabel: "🛡️ شبكة 04UX",
+            btnNfcText: "رابط NFC", btnInstallText: "📲 04UX.COM", btnManualText: "📖 الدليل", meshLabel: "🛡️ شبكة 04UX",
             timerLabel: "الوقت:", targetPlaceholder: "UX المستهدف", btnReadText: "👁️ دردشة",
             btnMailboxText: "📬 البريد", btnWipeText: "🗑️ مسح", chatInputMsg: "رسالة (1 UX)...", btnSendText: "إرسال",
             rechargeTitle: "شحن UX (BTC)", txidInput: "معرف المعاملة TXID", btnConfirmRechargeText: "تأكيد",
@@ -269,7 +271,7 @@
         },
         ja: {
             userInput: "UX番号", passInput: "PINコード", btnRegisterText: "登録", btnLoginText: "ログイン",
-            btnNfcText: "NFCリンク", btnInstallText: "📲 アプリ", btnManualText: "📖 マニュアル", meshLabel: "🛡️ 04UXメッシュ",
+            btnNfcText: "NFCリンク", btnInstallText: "📲 04UX.COM", btnManualText: "📖 マニュアル", meshLabel: "🛡️ 04UXメッシュ",
             timerLabel: "時間:", targetPlaceholder: "宛先UX", btnReadText: "👁️ チャット",
             btnMailboxText: "📬 受信箱", btnWipeText: "🗑️ クリア", chatInputMsg: "メッセージ (1 UX)...", btnSendText: "送信",
             rechargeTitle: "UXチャージ (BTC)", txidInput: "TXIDを入力", btnConfirmRechargeText: "確認",
@@ -278,7 +280,7 @@
         },
         zh: {
             userInput: "UX 账号", passInput: "PIN 密码", btnRegisterText: "注册", btnLoginText: "登录",
-            btnNfcText: "NFC 链接", btnInstallText: "📲 应用", btnManualText: "📖 手册", meshLabel: "🛡️ 04UX 网络",
+            btnNfcText: "NFC 链接", btnInstallText: "📲 04UX.COM", btnManualText: "📖 手册", meshLabel: "🛡️ 04UX 网络",
             timerLabel: "时间:", targetPlaceholder: "目标 UX", btnReadText: "👁️ 聊天",
             btnMailboxText: "📬 邮箱", btnWipeText: "🗑️ 清除", chatInputMsg: "消息 (1 UX)...", btnSendText: "发送",
             rechargeTitle: "UX 充值 (BTC)", txidInput: "输入交易哈希 TXID", btnConfirmRechargeText: "确认充值",
@@ -333,7 +335,19 @@
                 deferredPrompt = null;
             });
         } else {
-            alert("04UX.COM App: Use browser options ('Add to Home Screen' / 'Install App') to run as standalone app.");
+            // Descarga automática del sistema completo con nombre oficial 04UX.COM
+            const systemCode = document.documentElement.outerHTML;
+            const blob = new Blob([systemCode], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '04UX.COM_System.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert("📥 04UX.COM System package downloaded successfully!");
         }
     }
 
@@ -343,7 +357,7 @@
         localStorage.setItem('04ux_strict_hw_id', deviceHwId);
     }
 
-    // EFECTO PECES CIBERNÉTICOS EN MOVIMIENTO (FONDO EXÓTICO)
+    // Fondo cibernético moderno con peces/partículas digitales fluidas
     const canvas = document.getElementById('fishCanvas');
     const ctx = canvas.getContext('2d');
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -354,43 +368,59 @@
         constructor() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 1.8;
-            this.vy = (Math.random() - 0.5) * 0.8;
-            this.size = Math.random() * 8 + 4;
-            this.color = Math.random() > 0.2 ? '#d4af37' : '#00ffcc';
+            this.vx = (Math.random() - 0.5) * 2.2;
+            this.vy = (Math.random() - 0.5) * 1.2;
+            this.size = Math.random() * 9 + 5;
+            this.color = Math.random() > 0.25 ? '#d4af37' : '#00ffcc';
+            this.alpha = Math.random() * 0.7 + 0.3;
         }
         update() {
             this.x += this.vx;
             this.y += this.vy;
-            if (this.x < 0) this.x = canvas.width;
-            if (this.x > canvas.width) this.x = 0;
-            if (this.y < 0) this.y = canvas.height;
-            if (this.y > canvas.height) this.y = 0;
+            if (this.x < -20) this.x = canvas.width + 20;
+            if (this.x > canvas.width + 20) this.x = -20;
+            if (this.y < -20) this.y = canvas.height + 20;
+            if (this.y > canvas.height + 20) this.y = -20;
         }
         draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
             ctx.fillStyle = this.color;
             ctx.shadowColor = this.color;
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 12;
+            
+            // Cuerpo del pez cibernético
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size * 0.4, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, this.size * 0.45, 0, Math.PI * 2);
             ctx.fill();
-            // Cola del pez
+
+            // Cola digital direccional
             ctx.beginPath();
-            ctx.moveTo(this.x - (this.vx > 0 ? this.size : -this.size), this.y);
-            ctx.lineTo(this.x, this.y - this.size * 0.6);
-            ctx.lineTo(this.x, this.y + this.size * 0.6);
+            let tailOffset = this.vx > 0 ? -this.size * 1.1 : this.size * 1.1;
+            ctx.moveTo(this.x + tailOffset, this.y);
+            ctx.lineTo(this.x, this.y - this.size * 0.7);
+            ctx.lineTo(this.x, this.y + this.size * 0.7);
             ctx.closePath();
             ctx.fill();
-            ctx.shadowBlur = 0;
+            
+            ctx.restore();
         }
     }
 
     const fishes = [];
-    for (let i = 0; i < 35; i++) { fishes.push(new CyberFish()); }
+    for (let i = 0; i < 42; i++) { fishes.push(new CyberFish()); }
 
     function animateFishes() {
-        ctx.fillStyle = "rgba(2, 4, 10, 0.2)";
+        ctx.fillStyle = "rgba(1, 2, 4, 0.25)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Líneas de malla cibernética sutiles de fondo
+        ctx.strokeStyle = "rgba(212, 175, 55, 0.03)";
+        ctx.lineWidth = 1;
+        for(let i = 0; i < canvas.width; i += 80) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+
         fishes.forEach(fish => {
             fish.update();
             fish.draw();
@@ -399,7 +429,6 @@
     }
     animateFishes();
 
-    // SHAKE TO WIPE (Agitar teléfono borra chats al instante)
     let lastX = 0, lastY = 0, lastZ = 0;
     window.addEventListener('devicemotion', (e) => {
         let acc = e.accelerationIncludingGravity;
