@@ -15,14 +15,29 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// ==========================================
-// 🚨 TU BILLETERA BTC PERSONAL REAL 🚨
-// ==========================================
 const MY_PERSONAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
 const verifiedTransactions = new Set();
-
-// Control de dispositivos activos (1 sesión por UX)
 const activeSessions = new Map(); // uxNumber -> socketId
+const offlineMessages = new Map(); // targetUx -> Array of messages
+
+// ==========================================
+// 🛡️ BLOQUEO DE SEGURIDAD EXTREMA (IP / HW)
+// ==========================================
+const registeredHardware = new Map(); // hwId -> uxNumber (1 Dispositivo = 1 Cuenta estricta)
+const blacklistedIPs = new Set();     // IPs bloqueadas por fraude / cuentas múltiples
+
+function getClientIP(req) {
+    return req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+}
+
+// Middleware global de seguridad por IP
+app.use((req, res, next) => {
+    const ip = getClientIP(req);
+    if (blacklistedIPs.has(ip)) {
+        return res.status(403).json({ success: false, message: "⚠️ ACCESO DENEGADO: Tu IP y red están bloqueadas permanentemente por intento de múltiples registros." });
+    }
+    next();
+});
 
 function verifyBitcoinTransaction(txid, callback) {
     if (verifiedTransactions.has(txid)) return callback(false, "TXID already used.");
@@ -50,6 +65,38 @@ function verifyBitcoinTransaction(txid, callback) {
     }).on('error', () => callback(false, "Network error."));
 }
 
+// API de Validación de Registro con Seguridad Extrema 1:1
+app.post('/api/register-node', (req, res) => {
+    const { user, pass, hwId } = req.body;
+    const ip = getClientIP(req);
+
+    if (!user || !pass || !hwId) {
+        return res.status(400).json({ success: false, message: "Datos incompletos." });
+    }
+
+    // Cuenta Maestra bypass
+    if (user === "0" && pass === "197126") {
+        return res.json({ success: true, message: "Acceso maestro concedido." });
+    }
+
+    // Verificar si el hardware ya registró otra cuenta (Ej: cuentas 8, 9 intentando en el mismo cel)
+    if (registeredHardware.has(hwId)) {
+        const existingUser = registeredHardware.get(hwId);
+        if (existingUser !== user) {
+            blacklistedIPs.add(ip); // Bloquear IP y Red Wi-Fi
+            return res.status(403).json({ 
+                success: false, 
+                message: `❌ VIOLACIÓN DE SEGURIDAD EXTREMA: Este dispositivo ya registró la cuenta UX ${existingUser}. Bloqueo permanente de IP y hardware aplicado.` 
+            });
+        }
+    } else {
+        // Registrar hardware vinculado a este número
+        registeredHardware.set(hwId, user);
+    }
+
+    res.json({ success: true, message: "Nodo verificado y registrado con éxito." });
+});
+
 app.post('/api/verify-payment', (req, res) => {
     const { txid, user, pass } = req.body;
     if (user === "0" && pass === "197126") {
@@ -62,12 +109,6 @@ app.post('/api/verify-payment', (req, res) => {
     });
 });
 
-app.post('/api/generate-boss-link', (req, res) => {
-    const { user, pass } = req.body;
-    if (user !== "0" || pass !== "197126") return res.status(403).json({ success: false });
-    res.json({ success: true, inviteLink: `/download/04ux-system-package.zip?token=VIP_${Date.now()}` });
-});
-
 app.get('/download/04ux-system-package.zip', (req, res) => {
     const zipData = Buffer.from("PK\x03\x04\x14\x00\x00\x00\x08\x00" + "04UX_SYSTEM_CORE_BINARY_DATA".repeat(80));
     res.setHeader('Content-Type', 'application/zip');
@@ -75,10 +116,8 @@ app.get('/download/04ux-system-package.zip', (req, res) => {
     res.send(zipData);
 });
 
-// GESTIÓN DE RED Y ESTADOS EN VIVO (VERDE / ROJO)
 io.on('connection', (socket) => {
     socket.on('register_presence', (uxNumber) => {
-        // Validar restricción de 1 solo dispositivo por usuario
         if (activeSessions.has(uxNumber)) {
             const oldSocketId = activeSessions.get(uxNumber);
             io.to(oldSocketId).emit('forced_logout', 'Session opened on another device.');
@@ -88,8 +127,13 @@ io.on('connection', (socket) => {
         socket.uxNumber = uxNumber;
         socket.join(`ux_${uxNumber}`);
         
-        // Broadcast a toda la red que este usuario está en línea (Luz Verde)
         io.emit('update_status', { ux: uxNumber, online: true });
+
+        if (offlineMessages.has(uxNumber)) {
+            const pending = offlineMessages.get(uxNumber);
+            pending.forEach(msg => { socket.emit('incoming_message', msg); });
+            offlineMessages.delete(uxNumber);
+        }
     });
 
     socket.on('private_chat', (data) => {
@@ -100,9 +144,17 @@ io.on('connection', (socket) => {
             time: new Date().toLocaleTimeString() 
         };
         
-        if (data.targetUx && data.targetUx.trim() !== "") {
-            // Enviar al destinatario y al propio emisor al instante
-            io.to(`ux_${data.targetUx.trim()}`).to(`ux_${data.senderUx}`).emit('incoming_message', packet);
+        const target = data.targetUx ? data.targetUx.trim() : "";
+        if (target !== "") {
+            const targetSocketId = activeSessions.get(target);
+            socket.emit('incoming_message', packet);
+            
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('incoming_message', packet);
+            } else {
+                if (!offlineMessages.has(target)) offlineMessages.set(target, []);
+                offlineMessages.get(target).push(packet);
+            }
         } else {
             io.emit('incoming_message', packet);
         }
@@ -111,7 +163,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         if (socket.uxNumber) {
             activeSessions.delete(socket.uxNumber);
-            // Notificar que se desconectó (Luz Roja)
             io.emit('update_status', { ux: socket.uxNumber, online: false });
         }
     });
