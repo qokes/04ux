@@ -3,90 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>04UX.COM </title>
+    <title>04UX.COM PROTOCOL</title>
     <style>
         body {
-            background-color: #0b131a;
-            color: #e6edf3;
+            background-color: #0d1117;
+            color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         .container {
-            max-width: 400px;
+            max-width: 380px;
             width: 100%;
             text-align: center;
         }
-        h2 { font-size: 1.2rem; color: #58a6ff; margin-bottom: 5px; }
-        p.sub { font-size: 0.8rem; color: #8b949e; margin-bottom: 20px; }
-        
-        /* Input de contraseña seguro */
-        .password-box {
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .logo { font-size: 1.1rem; color: #58a6ff; font-weight: bold; text-align: left; }
+        .badge-group { display: flex; gap: 5px; }
+        .lang-badge, .enc-badge {
+            font-size: 0.65rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .lang-badge { background: #238636; color: white; cursor: pointer; }
+        .enc-badge { background: #1f6feb; color: white; }
+
+        .title-protocol {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #f0f6fc;
+            text-align: left;
+        }
+
+        /* Inputs y Botones Predeterminados Originales */
+        .input-box {
             background: #161b22;
             border: 2px solid #30363d;
             border-radius: 12px;
-            padding: 15px;
-            font-size: 1.5rem;
+            padding: 14px;
+            font-size: 1.4rem;
             color: #58a6ff;
-            letter-spacing: 5px;
             width: 100%;
             box-sizing: border-box;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             outline: none;
         }
-        .password-box:focus { border-color: #58a6ff; }
+        .input-box:focus { border-color: #58a6ff; }
 
         .btn {
             width: 100%;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: none;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             margin-bottom: 10px;
         }
         .btn-register { background-color: #db61a2; color: white; }
         .btn-login { background-color: #238636; color: white; }
-        .btn-action { background-color: #21262d; color: #58a6ff; border: 1px solid #30363d; }
+        .btn-default { background-color: #21262d; color: #58a6ff; border: 1px solid #30363d; }
 
         .disclaimer {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #8b949e;
             background: #161b22;
             padding: 10px;
-            border-radius: 6px;
-            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            margin-top: 15px;
             text-align: left;
         }
         .founder {
-            margin-top: 15px;
-            font-size: 0.8rem;
+            margin-top: 12px;
+            font-size: 0.75rem;
             color: #f0883e;
             font-weight: bold;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>04-UX</h2>
-    <p class="sub">04UX.COM PROTOCOL - ENCRYPTED</p>
+    <div class="header-top">
+        <div class="logo">04-UX</div>
+        <div class="badge-group">
+            <div class="lang-badge" id="langBtn" onclick="toggleLang()">ENGLISH</div>
+            <div class="enc-badge">ENCRYPTED</div>
+        </div>
+    </div>
 
-    <!-- Campo de contraseña / PIN interactivo -->
-    <input type="password" id="nodePassword" class="password-box" placeholder="PIN / Password" inputmode="numeric">
+    <div class="title-protocol">04UX.COM PROTOCOL</div>
 
+    <!-- Apartados de Usuario y Contraseña con Teclado Numérico Estricto -->
+    <input type="text" id="userInput" class="input-box" placeholder="USER ID / NODE" inputmode="numeric">
+    <input type="password" id="passInput" class="input-box" placeholder="PIN / PASSWORD" inputmode="numeric" pattern="[0-9]*">
+
+    <!-- Botones Predeterminados -->
     <button class="btn btn-register" onclick="registerNode()">REGISTER</button>
     <button class="btn btn-login" onclick="loginNode()">LOGIN</button>
 
-    <button class="btn btn-action" onclick="alert('NFC Proximity Scan Initiated...')">CONNECT VIA NFC PROXIMITY</button>
-    <button class="btn btn-action" onclick="alert('Redirecting to Secure Bitcoin Payment ($2.99 BTC)...')">DOWNLOAD APP ($2.99 BTC)</button>
+    <button class="btn btn-default" onclick="startNfcProximity()">CONNECT VIA NFC PROXIMITY</button>
+    <button class="btn btn-default" onclick="processBitcoinPayment()">DOWNLOAD APP ($2.99 BTC)</button>
 
-    <div class="disclaimer">
+    <div class="disclaimer" id="disclaimerText">
         <strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.
         <br><br>
         <label><input type="checkbox" id="termsCheck" checked> I accept full personal responsibility</label>
@@ -96,37 +128,85 @@
 </div>
 
 <script>
+    let currentLang = 'EN';
+
+    function toggleLang() {
+        currentLang = currentLang === 'EN' ? 'ES' : 'EN';
+        document.getElementById('langBtn').innerText = currentLang === 'EN' ? 'ENGLISH' : 'ESPAÑOL';
+        const disc = document.getElementById('disclaimerText');
+        if(currentLang === 'ES') {
+            disc.innerHTML = `<strong>Aviso y Términos:</strong> 04UX.COM es un protocolo estricto de conocimiento cero. Los usuarios asumen el 100% de la responsabilidad legal. El fundador posee inmunidad absoluta.<br><br><label><input type="checkbox" id="termsCheck" checked> Acepto la responsabilidad personal total</label>`;
+        } else {
+            disc.innerHTML = `<strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.<br><br><label><input type="checkbox" id="termsCheck" checked> I accept full personal responsibility</label>`;
+        }
+    }
+
     function registerNode() {
-        const pass = document.getElementById('nodePassword').value;
+        const user = document.getElementById('userInput').value;
+        const pass = document.getElementById('passInput').value;
         const accepted = document.getElementById('termsCheck').checked;
 
         if(!accepted) {
-            alert('You must accept personal responsibility.');
+            alert(currentLang === 'EN' ? 'You must accept personal responsibility.' : 'Debes aceptar la responsabilidad personal.');
             return;
         }
-        if(!pass) {
-            alert('Please enter a secure password/PIN to register your node.');
+        if(!user || !pass) {
+            alert(currentLang === 'EN' ? 'Please enter numeric User ID and Password.' : 'Por favor ingresa ID de usuario y contraseña numéricos.');
             return;
         }
 
-        // Guardar credencial de forma segura en el almacenamiento local del navegador
-        localStorage.setItem('04ux_node_pass', pass);
-        alert('Node successfully registered and secured with zero-knowledge encryption!');
+        localStorage.setItem('04ux_user_' + user, pass);
+        alert(currentLang === 'EN' ? 'Node securely registered!' : '¡Nodo registrado de forma segura!');
     }
 
     function loginNode() {
-        const pass = document.getElementById('nodePassword').value;
-        const savedPass = localStorage.getItem('04ux_node_pass');
+        const user = document.getElementById('userInput').value;
+        const pass = document.getElementById('passInput').value;
+        const savedPass = localStorage.getItem('04ux_user_' + user);
 
-        if(!pass) {
-            alert('Please enter your node password.');
+        if(!user || !pass) {
+            alert(currentLang === 'EN' ? 'Enter credentials.' : 'Ingresa tus credenciales.');
             return;
         }
 
-        if(pass === savedPass) {
-            alert('Access Granted. Welcome to 04UX.COM protocol.');
+        if(savedPass && savedPass === pass) {
+            alert(currentLang === 'EN' ? 'Access Granted to 04UX.COM' : 'Acceso Concedido a 04UX.COM');
         } else {
-            alert('Access Denied. Invalid node credentials.');
+            alert(currentLang === 'EN' ? 'Invalid credentials or unregistered node.' : 'Credenciales inválidas o nodo no registrado.');
+        }
+    }
+
+    /* NFC y Acercamiento Adaptado para Android e iPhone */
+    async function startNfcProximity() {
+        if ('NDEFReader' in window) {
+            try {
+                const ndef = new NDEFReader();
+                await ndef.scan();
+                alert(currentLang === 'EN' ? 'NFC Scanner active! Bring device close to another node.' : '¡Escáner NFC activo! Acerca el dispositivo a otro nodo.');
+                ndef.onreading = event => {
+                    alert(currentLang === 'EN' ? 'Node connected via NFC!' : '¡Nodo conectado vía NFC!');
+                };
+            } catch (error) {
+                alert('NFC Error: ' + error);
+            }
+        } else {
+            // Compatibilidad nativa para iPhone / Web Share / Proximidad por enlace de audio/perfil
+            if (navigator.share) {
+                navigator.share({
+                    title: '04UX.COM Node Link',
+                    text: 'Connect to my secure 04UX node',
+                    url: window.X-Location || window.location.href
+                }).catch(() => {});
+            } else {
+                alert(currentLang === 'EN' ? 'Proximity mode: Bring devices close. Web NFC requires Android Chrome or compatible hardware.' : 'Modo proximidad: Acerque los dispositivos. Web NFC requiere Chrome en Android o hardware compatible.');
+            }
+        }
+    }
+
+    function processBitcoinPayment() {
+        const btcAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // Billetera institucional 04UX
+        if (confirm(currentLang === 'EN' ? 'Send $2.99 in BTC to download app package?\n\nAddress: ' + btcAddress : '¿Enviar $2.99 en BTC para descargar el paquete de la app?\n\nDirección: ' + btcAddress)) {
+            window.location.href = "bitcoin:" + btcAddress + "?amount=0.00005&label=04UX.COM";
         }
     }
 </script>
