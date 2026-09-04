@@ -11,7 +11,7 @@ const io = new Server(server);
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// TU BILLETERA BITCOIN OFICIAL PARA 04UX.COM
+// BILLETERA OFICIAL DE LENOX JG
 const OFFICIAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
 const verifiedTransactions = new Set();
 
@@ -60,11 +60,10 @@ function verifyBitcoinTransaction(txid, callback) {
     });
 }
 
-// Validación de pago normal
+// Validación de pago para usuarios estándar (Excluye al Jefe 0 con contraseña 197126)
 app.post('/api/verify-payment', (req, res) => {
     const { txid, user, pass } = req.body;
     
-    // Si es el Jefe Supremo 0 con su contraseña exacta 197126
     if (user === "0" && pass === "197126") {
         return res.json({ success: true, downloadUrl: "/download/04ux-secure-system-package.zip" });
     }
@@ -80,11 +79,11 @@ app.post('/api/verify-payment', (req, res) => {
     });
 });
 
-// Endpoint para que el Jefe 0 genere un link de invitación gratuito
+// Generar link gratis exclusivo para el Jefe Ux 0
 app.post('/api/generate-boss-link', (req, res) => {
     const { user, pass } = req.body;
     if (user !== "0" || pass !== "197126") {
-        return res.status(403).json({ success: false, message: "Unauthorized: Invalid Boss Credentials." });
+        return res.status(403).json({ success: false, message: "Unauthorized." });
     }
     const inviteToken = "VIP_" + Math.random().toString(36).substring(2, 10).toUpperCase();
     res.json({ success: true, inviteLink: `/download/04ux-secure-system-package.zip?token=${inviteToken}` });
@@ -95,13 +94,10 @@ app.get('/download/04ux-secure-system-package.zip', (req, res) => {
     res.send("04UX PROTOCOL SECURE ENCRYPTED EXECUTABLE PACKAGE - FOUNDER: LENOX JG");
 });
 
-// Sistema de Chat Seguro Multiusuario en Tiempo Real
 io.on('connection', (socket) => {
     socket.on('user_message', (data) => {
-        // Difundir el mensaje a todos los nodos conectados (Jefe y usuarios)
         io.emit('broadcast_message', data);
     });
-
     socket.on('disconnect', () => {});
 });
 
