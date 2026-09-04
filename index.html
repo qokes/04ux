@@ -3,526 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>04UX.COM - EXTREME PRIVACY PROTOCOL</title>
+    <title>04UX.COM PROTOCOL</title>
     <style>
-        :root {
-            --neon-cyan: #00ffcc;
-            --neon-pink: #ff007f;
-            --neon-green: #00ff66;
-            --neon-red: #ff3333;
-            --bg-deep: #0b0e14;
-            --surface-dark: #121821;
-            --surface-card: #182232;
-        }
-
         body {
-            background-color: var(--bg-deep);
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b131a;
+            color: #e6edf3;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        /* Moving background */
-        .moving-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background: linear-gradient(125deg, #0b0e14 0%, #151b2b 50%, #0b0e14 100%);
-            background-size: 400% 400%;
-            animation: gradientMove 15s ease infinite;
-        }
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .corner-top-left {
-            position: fixed;
-            top: 15px; left: 20px;
-            color: var(--neon-cyan);
-            font-weight: 800;
-            font-size: 1rem;
-            letter-spacing: 2px;
-            z-index: 5;
-        }
-        
-        /* Language Selector at Top Right */
-        .lang-selector-container {
-            position: fixed;
-            top: 15px; right: 20px;
-            z-index: 5;
-        }
-        .lang-select {
-            background: var(--surface-card);
-            border: 1px solid var(--neon-cyan);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            cursor: pointer;
-            outline: none;
-        }
-
-        /* App Container */
-        .app-container {
-            background: var(--surface-dark);
-            border: 1px solid rgba(0, 255, 204, 0.15);
-            width: 100%;
-            max-width: 420px;
-            height: 90vh;
-            max-height: 800px;
-            border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .app-header {
-            padding: 15px 20px;
-            background: var(--surface-card);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .app-title {
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: #fff;
-        }
-
-        .app-content {
-            flex: 1;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            text-align: center;
-            overflow-y: auto;
         }
-
-        .num-input {
+        .container {
+            max-width: 400px;
             width: 100%;
-            padding: 14px;
-            background: var(--bg-deep);
-            border: 1px solid var(--neon-cyan);
-            color: #fff;
+            text-align: center;
+        }
+        h2 { font-size: 1.2rem; color: #58a6ff; margin-bottom: 5px; }
+        p.sub { font-size: 0.8rem; color: #8b949e; margin-bottom: 20px; }
+        
+        /* Input de contraseña seguro */
+        .password-box {
+            background: #161b22;
+            border: 2px solid #30363d;
             border-radius: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            text-align: center;
-            letter-spacing: 4px;
-            margin-bottom: 15px;
+            padding: 15px;
+            font-size: 1.5rem;
+            color: #58a6ff;
+            letter-spacing: 5px;
+            width: 100%;
             box-sizing: border-box;
+            text-align: center;
+            margin-bottom: 15px;
             outline: none;
         }
+        .password-box:focus { border-color: #58a6ff; }
 
-        .auth-actions {
-            display: flex;
-            gap: 12px;
+        .btn {
             width: 100%;
-            margin-bottom: 12px;
-        }
-        .btn-auth {
-            flex: 1;
             padding: 12px;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            border: none;
-        }
-        .btn-register {
-            background: rgba(255, 0, 127, 0.1);
-            border: 1px solid var(--neon-pink);
-            color: var(--neon-pink);
-        }
-        .btn-register:hover { background: var(--neon-pink); color: #000; }
-        
-        .btn-login {
-            background: rgba(0, 255, 204, 0.1);
-            border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-        }
-        .btn-login:hover { background: var(--neon-cyan); color: #000; }
-
-        .btn-action-full {
-            background: var(--surface-card);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            padding: 12px;
-            width: 100%;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 8px;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
-        .btn-action-full:hover { border-color: var(--neon-cyan); }
-
-        .btn-download {
-            background: linear-gradient(135deg, rgba(0,255,102,0.15), rgba(0,255,204,0.15));
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-        }
-
-        /* Footer with Terms, Liability & Founder */
-        .app-footer-legal {
-            background: rgba(7, 9, 14, 0.95);
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 12px 15px;
-            font-size: 10px;
-            color: #aaa;
-            text-align: center;
-        }
-        .terms-box-inline {
-            max-height: 55px;
-            overflow-y: auto;
-            text-align: left;
-            background: var(--bg-deep);
-            padding: 6px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 8px;
-            font-size: 9px;
-            line-height: 1.3;
-        }
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 8px;
-            font-size: 10px;
-            color: #fff;
-            cursor: pointer;
-        }
-        .founder-tag {
-            color: var(--neon-pink);
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-top: 4px;
-            font-size: 9px;
-        }
-
-        /* Bottom Nav Bar (iOS Style) */
-        .nav-bar {
-            height: 55px;
-            background: var(--surface-card);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-        .nav-item {
-            text-align: center;
-            font-size: 9px;
-            color: #888;
-            cursor: pointer;
-        }
-        .nav-item.active {
-            color: var(--neon-green);
-            font-weight: bold;
-        }
-
-        /* Modal / Real Payment Gateway */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 7, 11, 0.95);
-            z-index: 20;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .modal-box {
-            background: var(--surface-dark);
-            border: 1px solid var(--neon-cyan);
-            padding: 25px;
-            border-radius: 16px;
-            max-width: 380px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        .btc-address {
-            background: var(--bg-deep);
-            border: 1px dashed var(--neon-cyan);
-            padding: 10px;
-            font-size: 10px;
-            color: var(--neon-cyan);
-            word-break: break-all;
-            margin: 12px 0;
             border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn-register { background-color: #db61a2; color: white; }
+        .btn-login { background-color: #238636; color: white; }
+        .btn-action { background-color: #21262d; color: #58a6ff; border: 1px solid #30363d; }
+
+        .disclaimer {
+            font-size: 0.7rem;
+            color: #8b949e;
+            background: #161b22;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .founder {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: #f0883e;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <!-- REAL BITCOIN PAYMENT MODAL -->
-    <div id="btcModal" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="modalTitle" style="color: var(--neon-cyan); margin-top:0; font-size: 1rem;">SECURE BITCOIN GATEWAY</h3>
-            <p id="modalDesc1" style="font-size: 11px; color: #ccc;">To download the mobile application package, send the exact equivalent of <strong>$2.99 USD</strong> in Bitcoin to the official protocol node address below:</p>
-            
-            <div class="btc-address">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</div>
-            
-            <p id="modalDesc2" style="font-size: 9px; color: var(--neon-red); margin: 8px 0;">* Send ONLY Bitcoin. Transfers are verified on the blockchain mempool.</p>
-            
-            <a id="payLinkBtn" href="bitcoin:bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s?amount=0.00005&message=04UX%20App%20Download" class="btn-auth btn-login" style="display:block; text-decoration:none; text-align:center; background:var(--neon-cyan); color:#000; margin-top:10px; padding:12px;">OPEN WALLET & PAY $2.99</a>
-            
-            <button id="verifyBtn" class="btn-action-full" style="background:rgba(0,255,102,0.1); border-color:var(--neon-green); color:var(--neon-green);" onclick="checkBlockchainPayment()">I HAVE COMPLETED THE PAYMENT</button>
-            <button id="cancelBtn" class="btn-auth btn-register" style="width:100%; margin-top:8px;" onclick="closeBtcModal()">CANCEL</button>
-        </div>
+<div class="container">
+    <h2>04-UX</h2>
+    <p class="sub">04UX.COM PROTOCOL - ENCRYPTED</p>
+
+    <!-- Campo de contraseña / PIN interactivo -->
+    <input type="password" id="nodePassword" class="password-box" placeholder="PIN / Password" inputmode="numeric">
+
+    <button class="btn btn-register" onclick="registerNode()">REGISTER</button>
+    <button class="btn btn-login" onclick="loginNode()">LOGIN</button>
+
+    <button class="btn btn-action" onclick="alert('NFC Proximity Scan Initiated...')">CONNECT VIA NFC PROXIMITY</button>
+    <button class="btn btn-action" onclick="alert('Redirecting to Secure Bitcoin Payment ($2.99 BTC)...')">DOWNLOAD APP ($2.99 BTC)</button>
+
+    <div class="disclaimer">
+        <strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.
+        <br><br>
+        <label><input type="checkbox" id="termsCheck" checked> I accept full personal responsibility</label>
     </div>
 
-    <div class="corner-top-left">04-UX</div>
-    
-    <!-- Language Selector -->
-    <div class="lang-selector-container">
-        <select id="langSelect" class="lang-select" onchange="switchLanguage(this.value)">
-            <option value="en">ENGLISH</option>
-            <option value="es">ESPAÑOL</option>
-        </select>
-    </div>
+    <div class="founder">FOUNDER: LENOX JG</div>
+</div>
 
-    <div class="moving-bg"></div>
+<script>
+    function registerNode() {
+        const pass = document.getElementById('nodePassword').value;
+        const accepted = document.getElementById('termsCheck').checked;
 
-    <!-- Main App Container -->
-    <div class="app-container">
-        <div class="app-header">
-            <span id="headerTitle" class="app-title">04UX.COM PROTOCOL</span>
-            <span style="font-size: 9px; color: var(--neon-cyan);">ENCRYPTED</span>
-        </div>
-
-        <div class="app-content">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" class="num-input" placeholder="ENTER UX NUMBER" id="uxNumberInput">
-
-            <div class="auth-actions">
-                <button id="btnReg" class="btn-auth btn-register" onclick="handleAuthAction(handleRegister)">REGISTER</button>
-                <button id="btnLog" class="btn-auth btn-login" onclick="handleAuthAction(handleLogin)">LOGIN</button>
-            </div>
-
-            <button id="btnNfc" class="btn-action-full" onclick="handleAuthAction(initNfcPairing)">CONNECT VIA NFC PROXIMITY</button>
-            <button id="btnDownload" class="btn-action-full btn-download" onclick="handleAuthAction(openBtcModal)">DOWNLOAD APP ($2.99 BTC)</button>
-
-            <div id="systemHints" style="font-size: 9px; color: #666; margin-top: 15px; line-height: 1.3;">
-                * REFRESH TAB: Erases chats in 0.1s.<br>
-                * SHAKE 2X: Wipe chats | SHAKE 3X: Root purge.
-            </div>
-        </div>
-
-        <!-- Footer: Terms, Liability & Founder -->
-        <div class="app-footer-legal">
-            <div id="termsText" class="terms-box-inline">
-                <strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.
-            </div>
-            <label class="checkbox-container">
-                <input type="checkbox" id="acceptTermsCheck">
-                <span id="checkboxLabel">I accept full personal responsibility</span>
-            </label>
-            <div class="founder-tag">FOUNDER: LENOX JG</div>
-        </div>
-
-        <!-- iOS Style Bottom Navigation Bar -->
-        <div class="nav-bar">
-            <div class="nav-item active">
-                <div style="font-size: 14px;">💬</div><span id="navChats">CHATS</span>
-            </div>
-            <div class="nav-item">
-                <div style="font-size: 14px;">⚡</div><span id="navNodes">NODES</span>
-            </div>
-            <div class="nav-item">
-                <div style="font-size: 14px;">🔒</div><span id="navSec">SECURITY</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const translations = {
-            en: {
-                headerTitle: "04UX.COM PROTOCOL",
-                inputPlaceholder: "ENTER UX NUMBER",
-                btnReg: "REGISTER",
-                btnLog: "LOGIN",
-                btnNfc: "CONNECT VIA NFC PROXIMITY",
-                btnDownload: "DOWNLOAD APP ($2.99 BTC)",
-                systemHints: "* REFRESH TAB: Erases chats in 0.1s.<br>* SHAKE 2X: Wipe chats | SHAKE 3X: Root purge.",
-                termsText: "<strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.",
-                checkboxLabel: "I accept full personal responsibility",
-                navChats: "CHATS",
-                navNodes: "NODES",
-                navSec: "SECURITY",
-                modalTitle: "SECURE BITCOIN GATEWAY",
-                modalDesc1: "To download the mobile application package, send the exact equivalent of <strong>$2.99 USD</strong> in Bitcoin to the official protocol node address below:",
-                modalDesc2: "* Send ONLY Bitcoin. Transfers are verified on the blockchain mempool.",
-                payLinkBtn: "OPEN WALLET & PAY $2.99",
-                verifyBtn: "I HAVE COMPLETED THE PAYMENT",
-                cancelBtn: "CANCEL",
-                alertTerms: "SECURITY NOTICE: You must check 'I accept full personal responsibility' in the bottom footer to operate 04UX.COM.",
-                alertReg: "Verifying hardware fingerprint and registering secure numeric node...",
-                alertLog: "Accessing secure session. Friends list preserved, messages empty.",
-                alertNfc: "Activating NFC proximity hardware scanner for peer-to-peer link...",
-                alertMobileCheck: "Checking blockchain mempool status for transaction match ($2.99 USD)...",
-                alertRestriction: "RESTRICTION: Mobile app downloads are restricted exclusively to smartphones (iOS / Android)."
-            },
-            es: {
-                headerTitle: "PROTOCOLO 04UX.COM",
-                inputPlaceholder: "INGRESE NÚMERO UX",
-                btnReg: "REGISTRAR",
-                btnLog: "INGRESAR",
-                btnNfc: "CONECTAR VÍA PROXIMIDAD NFC",
-                btnDownload: "DESCARGAR APP ($2.99 BTC)",
-                systemHints: "* RECARGAR PESTAÑA: Borra chats en 0.1s.<br>* AGITAR 2 VECES: Limpiar chats | AGITAR 3 VECES: Purgar raíz.",
-                termsText: "<strong>Aviso legal y Términos:</strong> 04UX.COM es un protocolo estricto de conocimiento cero. Los usuarios asumen el 100% de la responsabilidad legal por sus acciones. El fundador posee inmunidad absoluta.",
-                checkboxLabel: "Acepto toda la responsabilidad personal",
-                navChats: "CHATS",
-                navNodes: "NODES",
-                navSec: "SEGURIDAD",
-                modalTitle: "PASARELA SEGURA DE BITCOIN",
-                modalDesc1: "Para descargar el paquete de la aplicación móvil, envíe el equivalente exacto de <strong>$2.99 USD</strong> en Bitcoin a la dirección oficial del nodo del protocolo:",
-                modalDesc2: "* Envíe ÚNICAMENTE Bitcoin. Las transferencias se verifican en la mempool de la cadena de bloques.",
-                payLinkBtn: "ABRIR CARTERA Y PAGAR $2.99",
-                verifyBtn: "HE COMPLETADO EL PAGO",
-                cancelBtn: "CANCELAR",
-                alertTerms: "AVISO DE SEGURIDAD: Debe marcar 'Acepto toda la responsabilidad personal' en el pie de página inferior para operar 04UX.COM.",
-                alertReg: "Verificando huella digital de hardware y registrando nodo numérico seguro...",
-                alertLog: "Accediendo a sesión segura. Lista de amigos conservada, mensajes vacíos.",
-                alertNfc: "Activando escáner de hardware por proximidad NFC para enlace punto a punto...",
-                alertMobileCheck: "Verificando el estado de la mempool de blockchain para la coincidencia de transacción ($2.99 USD)...",
-                alertRestriction: "RESTRICCIÓN: Las descargas de la aplicación móvil están restringidas exclusivamente a smartphones (iOS / Android)."
-            }
-        };
-
-        function switchLanguage(lang) {
-            const t = translations[lang];
-            document.getElementById('headerTitle').innerText = t.headerTitle;
-            document.getElementById('uxNumberInput').placeholder = t.inputPlaceholder;
-            document.getElementById('btnReg').innerText = t.btnReg;
-            document.getElementById('btnLog').innerText = t.btnLog;
-            document.getElementById('btnNfc').innerText = t.btnNfc;
-            document.getElementById('btnDownload').innerText = t.btnDownload;
-            document.getElementById('systemHints').innerHTML = t.systemHints;
-            document.getElementById('termsText').innerHTML = t.termsText;
-            document.getElementById('checkboxLabel').innerText = t.checkboxLabel;
-            document.getElementById('navChats').innerText = t.navChats;
-            document.getElementById('navNodes').innerText = t.navNodes;
-            document.getElementById('navSec').innerText = t.navSec;
-            
-            document.getElementById('modalTitle').innerText = t.modalTitle;
-            document.getElementById('modalDesc1').innerHTML = t.modalDesc1;
-            document.getElementById('modalDesc2').innerText = t.modalDesc2;
-            document.getElementById('payLinkBtn').innerText = t.payLinkBtn;
-            document.getElementById('verifyBtn').innerText = t.verifyBtn;
-            document.getElementById('cancelBtn').innerText = t.cancelBtn;
+        if(!accepted) {
+            alert('You must accept personal responsibility.');
+            return;
+        }
+        if(!pass) {
+            alert('Please enter a secure password/PIN to register your node.');
+            return;
         }
 
-        function getCurrentLang() {
-            return document.getElementById('langSelect').value;
+        // Guardar credencial de forma segura en el almacenamiento local del navegador
+        localStorage.setItem('04ux_node_pass', pass);
+        alert('Node successfully registered and secured with zero-knowledge encryption!');
+    }
+
+    function loginNode() {
+        const pass = document.getElementById('nodePassword').value;
+        const savedPass = localStorage.getItem('04ux_node_pass');
+
+        if(!pass) {
+            alert('Please enter your node password.');
+            return;
         }
 
-        function handleAuthAction(callback) {
-            const isAccepted = document.getElementById('acceptTermsCheck').checked;
-            const lang = getCurrentLang();
-            if (!isAccepted) {
-                alert(translations[lang].alertTerms);
-                return;
-            }
-            callback();
+        if(pass === savedPass) {
+            alert('Access Granted. Welcome to 04UX.COM protocol.');
+        } else {
+            alert('Access Denied. Invalid node credentials.');
         }
+    }
+</script>
 
-        const inputField = document.getElementById('uxNumberInput');
-        inputField.addEventListener('input', function (e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
-
-        function handleRegister() {
-            const lang = getCurrentLang();
-            alert(translations[lang].alertReg);
-        }
-
-        function handleLogin() {
-            const lang = getCurrentLang();
-            alert(translations[lang].alertLog);
-        }
-
-        function openBtcModal() {
-            const lang = getCurrentLang();
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (!isMobile) {
-                alert(translations[lang].alertRestriction);
-                return;
-            }
-            document.getElementById('btcModal').style.display = 'flex';
-        }
-
-        function closeBtcModal() {
-            document.getElementById('btcModal').style.display = 'none';
-        }
-
-        function checkBlockchainPayment() {
-            const lang = getCurrentLang();
-            alert(translations[lang].alertMobileCheck + "\n\n(Note: Once network confirmation is detected, the 04UX iOS/Android package will initiate direct installation.)");
-            closeBtcModal();
-        }
-
-        function initNfcPairing() {
-            const lang = getCurrentLang();
-            alert(translations[lang].alertNfc);
-        }
-
-        window.addEventListener('beforeunload', function () {
-            localStorage.removeItem('active_messages');
-            sessionStorage.clear();
-        });
-
-        let shakeCount = 0;
-        let lastShakeTime = 0;
-        const SHAKE_THRESHOLD = 22;
-
-        window.addEventListener('devicemotion', (event) => {
-            const acc = event.accelerationIncludingGravity;
-            if (!acc) return;
-            const currentTime = new Date().getTime();
-            if ((currentTime - lastShakeTime) > 1500) shakeCount = 0;
-
-            const totalMovement = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-            if (totalMovement > SHAKE_THRESHOLD) {
-                shakeCount++;
-                lastShakeTime = currentTime;
-                if (shakeCount === 2) triggerChatWipe();
-                if (shakeCount >= 3) triggerAppRootDestruction();
-            }
-        });
-
-        function triggerChatWipe() {
-            document.body.innerHTML = "<div style='background:#0b0e14; color:#ff3333; height:100vh; display:flex; justify-content:center; align-items:center; font-family:monospace; font-size:16px; font-weight:bold;'>EMERGENCY 2X: ALL CHATS WIPED.</div>";
-            localStorage.removeItem('active_messages');
-        }
-
-        function triggerAppRootDestruction() {
-            document.body.innerHTML = "<div style='background:#000; color:#ff0000; height:100vh; display:flex; justify-content:center; align-items:center; font-family:monospace; font-size:18px; font-weight:bold;'>CRITICAL: APP PURGED FROM ROOT SYSTEM.</div>";
-            localStorage.clear();
-            sessionStorage.clear();
-            setTimeout(() => { window.location.href = "about:blank"; }, 100);
-        }
-    </script>
 </body>
 </html>
