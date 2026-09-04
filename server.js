@@ -1,120 +1,74 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const axios = require('axios');
-const path = require('path');
+const fs = require('fs');
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static('./'));
 
-// Archivos estáticos si pones tu HTML en la misma carpeta
-app.use(express.static(__dirname));
+const OFFICIAL_BTC = 'bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s'; // TU BILLETERA OFICIAL
+const MEMPOOL_API = 'https://mempool.space/api';
 
-// TU BILLETERA REAL DE BITCOIN (Aquí deben llegar los pagos reales)
-const REAL_WALLET_ADDRESS = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
+let usedTxids = new Set();
+if(fs.existsSync('./used_txids.json')){
+  usedTxids = new Set(JSON.parse(fs.readFileSync('./used_txids.json')));
+}
 
-// Base de datos en memoria (puedes reemplazarla por MongoDB o SQL)
-let usersDB = {};       // { "12345": { pass: "123", balance: 20, hwId: "..." } }
-let usedTxids = new Set(); // Evita que reutilicen el mismo comprobante de pago
+let users = {}; // { uxNumber: { pin, vipUntil } }
+let offlineBox = {}; // buzón offline
 
-// 1. Registro de Nodo
-app.post('/api/register-node', (req, res) => {
-    const { user, pass, hwId } = req.body;
-    if (!user || !pass) return res.json({ success: false, message: "Datos incompletos." });
-
-    if (usersDB[user]) {
-        return res.json({ success: false, message: "Este número UX ya está registrado." });
-    }
-
-    usersDB[user] = { pass, balance: 20, hwId: hwId || '' };
-    res.json({ success: true, balance: 20, message: "Nodo registrado con 20 UX iniciales." });
+// API registro fácil + anti-multicuentas HWID
+app.post('/api/register', (req,res)=>{
+  const { uxNumber, pin, hwid } = req.body;
+  if(users[uxNumber]) return res.status(400).json({error:'UX ya existe'});
+  users[uxNumber] = { pin, hwid, vipUntil: 0 };
+  res.json({ok:true});
 });
 
-// 2. Inicio de Sesión
-app.post('/api/login-node', (req, res) => {
-    const { user, pass } = req.body;
-    if (!usersDB[user]) {
-        // Si no existe, lo creamos automáticamente para agilizar
-        usersDB[user] = { pass, balance: 20 };
-    }
-    
-    if (usersDB[user].pass !== pass) {
-        return res.json({ success: false, message: "PIN incorrecto." });
-    }
+// API verificar pago VIP $9.99 en BTC
+app.post('/api/verify-vip', async (req,res)=>{
+  const { txid } = req.body;
+  if(usedTxids.has(txid)) return res.status(403).json({error:'TXID ya usado'});
 
-    res.json({ success: true, balance: usersDB[user].balance });
+  try{
+    const { data: tx } = await axios.get(`${MEMPOOL_API}/tx/${txid}`);
+    if(!tx.status.confirmed) return res.status(400).json({error:'No confirmado aún'});
+
+    const valid = tx.vout.find(v => v.scriptpubkey_address === OFFICIAL_BTC);
+    if(!valid) return res.status(400).json({error:'No llegó a billetera oficial'});
+
+    usedTxids.add(txid);
+    fs.writeFileSync('./used_txids.json', JSON.stringify([...usedTxids]));
+
+    // Activa VIP 30 días por $9.99
+    res.json({success:true, msg:'VIP $9.99 ACTIVADO'});
+  }catch(e){
+    res.status(400).json({error:'TXID inválido'});
+  }
 });
 
-// 3. VERIFICADOR REAL DE PAGOS BLOCKCHAIN (Anti-Fraude)
-app.post('/api/verify-bitcoin-payment', async (req, res) => {
-    const { user, txid, packageKey } = req.body;
-
-    if (!user || !txid || !packageKey) {
-        return.status(400).json({ success: false, message: "Faltan parámetros de pago." });
+io.on('connection', socket=>{
+  socket.on('ux-login', (ux)=>{
+    socket.join(ux);
+    if(offlineBox[ux]){
+      socket.emit('offline-messages', offlineBox[ux]);
+      delete offlineBox[ux];
     }
-
-    if (!usersDB[user]) {
-        return.status(400).json({ success: false, message: "Usuario no válido." });
+  });
+  socket.on('ux-send', (data)=>{
+    const { to, msg } = data;
+    if(io.sockets.adapter.rooms.get(to)){
+      io.to(to).emit('ux-message', { from: socket.ux, msg });
+    }else{
+      if(!offlineBox[to]) offlineBox[to] = [];
+      offlineBox[to].push({from: socket.ux, msg});
     }
-
-    // Evitar doble gasto o reutilización del mismo TXID
-    if (usedTxids.has(txid)) {
-        return.status(400).json({ success: false, message: "⚠️ Este TXID ya fue utilizado anteriormente." });
-    }
-
-    try {
-        // Consultar la API pública de Mempool para verificar la transacción en tiempo real
-        const response = await axios.get(`https://mempool.space/api/tx/${txid}`);
-        const txData = response.data;
-
-        if (!txData || !txData.status) {
-            return.status(400).json({ success: false, message: "La transacción no existe en la red Bitcoin." });
-        }
-
-        // Validar que el pago haya sido enviado estrictamente a TU billetera real
-        let paymentFound = false;
-        let totalSatoshisSent = 0;
-
-        txData.vout.forEach(output => {
-            if (output.scriptpubkey_address === REAL_WALLET_ADDRESS) {
-                paymentFound = true;
-                totalSatoshisSent += output.value; // Cantidad en Satoshis
-            }
-        });
-
-        if (!paymentFound) {
-            return.status(400).json({ success: false, message: "El pago no fue enviado a la billetera oficial de 04UX." });
-        }
-
-        // Mapeo de paquetes a UX acreditados
-        const packageValues = {
-            "250": 250,
-            "500": 500,
-            "1250": 1250,
-            "2500": 2500,
-            "10000": 10000,
-            "100000": 100000
-        };
-
-        const uxToAdd = packageValues[packageKey] || 250;
-
-        // Registrar TXID como usado
-        usedTxids.add(txid);
-
-        // Acreditar saldo real
-        usersDB[user].balance += uxToAdd;
-
-        res.json({
-            success: true,
-            message: `¡Pago confirmado en la Blockchain! +${uxToAdd} UX acreditados.`,
-            newBalance: usersDB[user].balance
-        });
-
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Error al verificar el TXID en la red Bitcoin o transacción inválida." });
-    }
+  });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor 04UX activo en puerto ${PORT}`);
-});
+server.listen(process.env.PORT || 3000, ()=>console.log('04UX.COM - FUNDADOR LENOX JG - Corriendo'));
