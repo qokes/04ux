@@ -1,17 +1,19 @@
 const express = require('express');
-const http = require('http');
+const http = http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const https = require('https');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: { origin: "*" }
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// BILLETERA OFICIAL DE LENOX JG
+// TU BILLETERA DE BTC CORRECTA
 const OFFICIAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
 const verifiedTransactions = new Set();
 
@@ -42,7 +44,7 @@ function verifyBitcoinTransaction(txid, callback) {
                 });
 
                 if (!isValidRecipient) {
-                    return callback(false, "Payment address does not match official 04UX vault.");
+                    return callback(false, "Payment address does not match your official vault.");
                 }
 
                 if (totalSatoshis < 5000) {
@@ -60,7 +62,6 @@ function verifyBitcoinTransaction(txid, callback) {
     });
 }
 
-// Validación de pago para usuarios estándar (Excluye al Jefe 0 con contraseña 197126)
 app.post('/api/verify-payment', (req, res) => {
     const { txid, user, pass } = req.body;
     
@@ -79,7 +80,6 @@ app.post('/api/verify-payment', (req, res) => {
     });
 });
 
-// Generar link gratis exclusivo para el Jefe Ux 0
 app.post('/api/generate-boss-link', (req, res) => {
     const { user, pass } = req.body;
     if (user !== "0" || pass !== "197126") {
@@ -94,10 +94,17 @@ app.get('/download/04ux-secure-system-package.zip', (req, res) => {
     res.send("04UX PROTOCOL SECURE ENCRYPTED EXECUTABLE PACKAGE - FOUNDER: LENOX JG");
 });
 
+// GESTIÓN DE CHAT EN VIVO Y DIRECTO ENTRE NODOS UX
 io.on('connection', (socket) => {
-    socket.on('user_message', (data) => {
-        io.emit('broadcast_message', data);
+    socket.on('register_ux', (uxNumber) => {
+        socket.uxNumber = uxNumber;
     });
+
+    socket.on('private_message', (data) => {
+        // data: { sender, recipientUx, text }
+        io.emit('incoming_message', data); // Broadcast optimizado para entrega ultra rápida
+    });
+
     socket.on('disconnect', () => {});
 });
 
