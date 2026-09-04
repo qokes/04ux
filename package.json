@@ -1,13 +1,9 @@
 {
-  "name": "04ux",
-  "version": "1.0.0",
-  "description": "Extreme Privacy Protocol",
+  "name": "04-ux-elite",
+  "version": "2.0.0",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
   "dependencies": {
-    "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
   }
 }
