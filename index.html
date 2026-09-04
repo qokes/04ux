@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>04UX.COM // LENOX JG ELITE SYSTEM</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <title>04UX.COM // SECURE SYSTEM</title>
     <style>
         canvas#cyberCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -17,7 +16,7 @@
         }
         body {
             background-color: #010204; color: #f8fafc;
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0; padding: 6px; display: flex; flex-direction: column; align-items: center;
             min-height: 100vh; box-sizing: border-box; overflow-x: hidden;
         }
@@ -31,98 +30,19 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 6px; margin-bottom: 8px;
         }
-        .brand { font-size: 0.85rem; font-weight: 900; color: #fef08a; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(254,240,138,0.4); }
-        .lang-select {
-            background: #020307; border: 1px solid #d4af37; color: #fef08a;
-            padding: 3px 6px; border-radius: 6px; font-size: 0.6rem; outline: none; cursor: pointer;
-        }
-        .balance-badge {
-            font-size: 0.65rem; color: #22c55e; font-weight: bold;
-            background: rgba(34,197,94,0.12); padding: 3px 8px; border-radius: 8px;
-            border: 1px solid rgba(34,197,94,0.35);
-        }
-        .status-pill {
-            display: flex; align-items: center; gap: 4px;
-            font-size: 0.55rem; background: #0b0f19; padding: 3px 6px;
-            border-radius: 20px; border: 1px solid #1e293b;
-        }
-        .led-indicator {
-            width: 6px; height: 6px; border-radius: 50%;
-            background-color: #ef4444; box-shadow: 0 0 5px #ef4444;
-        }
-        .led-indicator.online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
-        
+        .brand { font-size: 0.85rem; font-weight: 900; color: #fef08a; letter-spacing: 1.5px; }
+        .balance-badge { font-size: 0.65rem; color: #22c55e; font-weight: bold; background: rgba(34,197,94,0.12); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(34,197,94,0.35); }
         .input-cyber {
             background: #03050a; border: 1.5px solid #1e293b; border-radius: 8px;
             padding: 9px; font-size: 0.85rem; color: #fef08a; width: 100%;
             box-sizing: border-box; text-align: center; margin-bottom: 8px; outline: none;
-            transition: border-color 0.3s;
         }
-        .input-cyber:focus { border-color: #d4af37; box-shadow: 0 0 8px rgba(212,175,55,0.3); }
-
+        .input-cyber:focus { border-color: #d4af37; }
         .btn-container { display: flex; gap: 6px; margin-bottom: 8px; }
-        .btn-master {
-            flex: 1; padding: 10px; border-radius: 8px; border: none;
-            font-weight: 800; font-size: 0.7rem; cursor: pointer;
-            background: linear-gradient(135deg, #d4af37, #9a7b20); color: #02040a;
-            box-shadow: 0 3px 12px rgba(212,175,55,0.3);
-        }
-        .btn-login {
-            flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #d4af37;
-            font-weight: 800; font-size: 0.7rem; cursor: pointer;
-            background: #0f172a; color: #fef08a;
-        }
-        .btn-secondary-row { display: flex; gap: 6px; margin-bottom: 8px; }
-        .btn-action {
-            flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #1e293b;
-            font-weight: bold; font-size: 0.65rem; cursor: pointer; background: #0f172a; color: #94a3b8; text-align: center;
-        }
-        .btn-action:hover { border-color: #d4af37; color: #fef08a; }
+        .btn-master { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.7rem; cursor: pointer; background: linear-gradient(135deg, #d4af37, #9a7b20); color: #02040a; }
+        .btn-login { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #d4af37; font-weight: 800; font-size: 0.7rem; cursor: pointer; background: #0f172a; color: #fef08a; }
         
-        #chatPanel {
-            display: none; background: #03050a; border: 1px solid rgba(212,175,55,0.35);
-            border-radius: 12px; padding: 10px; margin-top: 8px;
-        }
-        .chat-header-info {
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.65rem; color: #fef08a; margin-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.12); padding-bottom: 4px;
-        }
-        .config-row {
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.65rem; color: #94a3b8; margin-bottom: 8px; background: #060a14; padding: 6px 8px; border-radius: 8px;
-        }
-        .timer-select {
-            background: #020307; border: 1px solid #334155; color: #fef08a;
-            padding: 3px; border-radius: 6px; font-size: 0.65rem; outline: none;
-        }
-        
-        /* PANTALLA DE CHAT MÁS GRANDE Y CÓMODA (330px) */
-        .chat-screen {
-            height: 330px; overflow-y: auto; background: #020307; border: 1px solid #1e293b;
-            padding: 10px; font-size: 0.8rem; border-radius: 8px; margin-bottom: 8px; color: #cbd5e1; display: none;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.9);
-        }
-        .msg-bubble { padding: 8px 12px; border-radius: 10px; max-width: 85%; word-break: break-word; margin-bottom: 8px; line-height: 1.4; }
-        .msg-incoming { background: #1e293b; color: #f8fafc; border-left: 3px solid #3b82f6; }
-        .msg-outgoing { background: #065f46; color: #ecfdf5; margin-left: auto; border-right: 3px solid #10b981; }
-        
-        .chat-actions-row { display: flex; gap: 6px; margin-bottom: 6px; }
-        .btn-read { background: #3b82f6; color: white; border: none; padding: 7px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
-        .btn-mailbox { background: #8b5cf6; color: white; border: none; padding: 7px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
-        .btn-wipe-chat { background: #ef4444; color: white; border: none; padding: 7px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
-
-        .chat-input-row { display: flex; gap: 6px; margin-bottom: 4px; }
-        .chat-txt {
-            flex: 1; background: #020307; border: 1.5px solid #334155; color: white;
-            padding: 10px; border-radius: 8px; font-size: 0.85rem; outline: none;
-            transition: border-color 0.3s;
-        }
-        .chat-txt:focus { border-color: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.3); }
-        .btn-send {
-            background: #10b981; color: white; border: none; padding: 10px 16px;
-            border-radius: 8px; font-weight: bold; font-size: 0.75rem; cursor: pointer;
-        }
-
+        #platformPanel { display: none; margin-top: 8px; }
         .recharge-box {
             background: #03050a; border: 1px dashed #d4af37; border-radius: 10px; padding: 10px; margin-top: 8px;
         }
@@ -130,12 +50,12 @@
             width: 100%; background: #020307; border: 1px solid #334155; color: #fef08a;
             padding: 7px; border-radius: 6px; font-size: 0.7rem; margin-bottom: 6px; outline: none;
         }
-        .wallet-text { font-size: 0.52rem; color: #94a3b8; word-break: break-all; margin-bottom: 6px; text-align: center; }
+        .wallet-text { font-size: 0.55rem; color: #94a3b8; word-break: break-all; margin-bottom: 6px; text-align: center; background: #080c16; padding: 4px; border-radius: 4px; }
         .btn-recharge {
             background: linear-gradient(135deg, #d4af37, #b8860b); color: #02040a;
             width: 100%; padding: 8px; border-radius: 6px; border: none; font-weight: bold; font-size: 0.7rem; cursor: pointer;
         }
-        .footer-tag { text-align: center; font-size: 0.48rem; color: #64748b; margin-top: 8px; letter-spacing: 0.5px; }
+        .footer-tag { text-align: center; font-size: 0.48rem; color: #64748b; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -145,190 +65,41 @@
 <div class="elite-card">
     <div class="top-bar">
         <div class="brand">04UX.COM</div>
-        <select id="langSelector" class="lang-select" onchange="switchLanguage(this.value)">
-            <option value="en" selected>ENGLISH</option>
-            <option value="es">ESPAÑOL</option>
-            <option value="ru">РУССКИЙ</option>
-            <option value="fr">FRANÇAIS</option>
-            <option value="ar">العربية</option>
-            <option value="ja">日本語</option>
-            <option value="zh">中文</option>
-        </select>
-        <div class="balance-badge" id="balanceDisplay">UX: 20</div>
-        <div class="status-pill">
-            <span id="ledStatus" class="led-indicator"></span>
-            <span id="statusText" style="color: #ef4444;">OFF</span>
-        </div>
+        <div class="balance-badge" id="balanceDisplay">UX: 0</div>
     </div>
 
-    <input type="text" id="userInput" class="input-cyber" placeholder="UX NUMBER" autocomplete="off" inputmode="numeric" value="0">
-    <input type="password" id="passInput" class="input-cyber" placeholder="PIN CODE" autocomplete="new-password" inputmode="numeric" value="......">
+    <input type="text" id="userInput" class="input-cyber" placeholder="UX NUMBER" autocomplete="off">
+    <input type="password" id="passInput" class="input-cyber" placeholder="PIN CODE" autocomplete="new-password">
 
     <div class="btn-container">
-        <button class="btn-master" id="btnRegisterText" onclick="registerNode()">REGISTER (+20 UX)</button>
-        <button class="btn-login" id="btnLoginText" onclick="loginNode()">LOGIN</button>
-    </div>
-    
-    <div class="btn-secondary-row">
-        <button class="btn-action" id="btnNfcText" onclick="connectNfcPin()">📡 NFC / LINK</button>
-        <button class="btn-action" id="btnManualText" onclick="openManual()">📖 MANUAL</button>
+        <button class="btn-master" onclick="registerNode()">REGISTER (+20 UX)</button>
+        <button class="btn-login" onclick="loginNode()">LOGIN</button>
     </div>
 
-    <div id="chatPanel">
-        <div class="chat-header-info">
-            <span id="meshLabel">🛡️ 04UX MESH</span>
-            <span id="myActiveUxLabel" style="color: #22c55e;">--</span>
-        </div>
-
-        <div class="config-row">
-            <span id="timerLabel">TIME LIMIT:</span>
-            <select id="timerSelect" class="timer-select" onchange="updateChatTimerConfig()">
-                <option value="30">30s</option>
-                <option value="90" selected>1:30 (-2 UX)</option>
-                <option value="180">3m</option>
+    <div id="platformPanel">
+        <div class="recharge-box">
+            <div style="font-size: 0.6rem; color: #fef08a; font-weight: bold; text-align: center; margin-bottom: 4px;">SECURE BLOCKCHAIN RECHARGE</div>
+            <select id="packageSelect" class="package-select">
+                <option value="250">250 UX - $2.99 USD</option>
+                <option value="500">500 UX - $3.99 USD</option>
+                <option value="1250">1250 UX - $7.99 USD</option>
+                <option value="2500">2500 UX - $16.99 USD</option>
+                <option value="10000">10000 UX - $35.99 USD</option>
+                <option value="100000">100000 UX - $499.00 USD</option>
             </select>
-        </div>
-        
-        <div style="margin-bottom: 6px;">
-            <input type="text" id="targetUxInput" class="chat-txt" placeholder="Target UX (Mailbox)" autocomplete="off" inputmode="numeric" style="width: 100%;">
-        </div>
-
-        <div class="chat-actions-row">
-            <button class="btn-read" id="btnReadText" onclick="toggleReadMessages()">👁️ CHAT</button>
-            <button class="btn-mailbox" id="btnMailboxText" onclick="openMailbox()">📬 MAILBOX</button>
-            <button class="btn-wipe-chat" id="btnWipeText" onclick="executeInstantWipe()">🗑️ CLEAR</button>
-        </div>
-
-        <!-- Pantalla de chat grande (330px) -->
-        <div class="chat-screen" id="chatMessages"></div>
-
-        <div class="chat-input-row">
-            <input type="text" id="chatInputMsg" class="chat-txt" placeholder="Message (1 UX)..." autocomplete="off" onkeypress="handleChatKey(event)">
-            <button class="btn-send" id="btnSendText" onclick="sendChatMessage()">SEND</button>
+            <div class="wallet-text">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+            <input type="text" id="txidInput" class="input-cyber" placeholder="PASTE BLOCKCHAIN TXID" autocomplete="off" style="font-size: 0.6rem; margin-bottom: 6px;">
+            <button class="btn-recharge" onclick="processBlockchainRecharge()">VERIFY & ACCREDIT UX</button>
         </div>
     </div>
 
-    <div class="recharge-box" id="rechargeSection">
-        <div id="rechargeTitle" style="font-size: 0.6rem; color: #fef08a; font-weight: bold; text-align: center; margin-bottom: 4px;">UX RECHARGE (REAL BTC)</div>
-        <select id="packageSelect" class="package-select">
-            <option value="250">250 UX - $2.99 USD</option>
-            <option value="500">500 UX - $3.99 USD</option>
-            <option value="1250">1250 UX - $7.99 USD</option>
-            <option value="2500">2500 UX - $16.99 USD</option>
-            <option value="10000">10000 UX - $35.99 USD</option>
-            <option value="100000">100000 UX - $499.00 USD</option>
-        </select>
-        <div class="wallet-text">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
-        <input type="text" id="txidInput" class="input-cyber" placeholder="BLOCKCHAIN TXID" autocomplete="off" style="font-size: 0.6rem; margin-bottom: 6px;">
-        <button class="btn-recharge" id="btnConfirmRechargeText" onclick="processRecharge()">CONFIRM RECHARGE</button>
-    </div>
-
-    <div class="footer-tag" id="footerTagText">04UX.COM // FOUNDER: LENOX JG (04-09-26)</div>
+    <div class="footer-tag">04UX.COM // FOUNDER: LENOX JG</div>
 </div>
 
 <script>
-    const translations = {
-        en: {
-            userInput: "UX NUMBER", passInput: "PIN CODE", btnRegisterText: "REGISTER (+20 UX)", btnLoginText: "LOGIN",
-            btnNfcText: "📡 NFC / LINK", btnManualText: "📖 MANUAL", meshLabel: "🛡️ 04UX MESH",
-            timerLabel: "TIME LIMIT:", targetPlaceholder: "Target UX (Mailbox)", btnReadText: "👁️ CHAT",
-            btnMailboxText: "📬 MAILBOX", btnWipeText: "🗑️ CLEAR", chatInputMsg: "Message (1 UX)...", btnSendText: "SEND",
-            rechargeTitle: "UX RECHARGE (REAL BTC)", txidInput: "BLOCKCHAIN TXID", btnConfirmRechargeText: "CONFIRM RECHARGE",
-            footerTagText: "04UX.COM // FOUNDER: LENOX JG (04-09-26)",
-            manualText: "📖 04UX.COM USER MANUAL (LENOX JG):\n1. Enter any UX number (including 0) and PIN to register or login instantly.\n2. Use NFC / LINK to auto-connect or chat directly with another user via URL parameters.\n3. Shake your phone or reload to wipe chats securely."
-        },
-        es: {
-            userInput: "NÚMERO UX", passInput: "PIN CLAVE", btnRegisterText: "REGISTRARSE (+20 UX)", btnLoginText: "INICIAR",
-            btnNfcText: "📡 NFC / ENLACE", btnManualText: "📖 MANUAL", meshLabel: "🛡️ 04UX MESH",
-            timerLabel: "TIEMPO:", targetPlaceholder: "UX Destino (Buzón)", btnReadText: "👁️ CHAT",
-            btnMailboxText: "📬 BUZÓN", btnWipeText: "🗑️ LIMPIAR", chatInputMsg: "Mensaje (1 UX)...", btnSendText: "ENVIAR",
-            rechargeTitle: "RECARGA UX (BTC REAL)", txidInput: "TXID BLOCKCHAIN", btnConfirmRechargeText: "CONFIRMAR",
-            footerTagText: "04UX.COM // FUNDADOR: LENOX JG (04-09-26)",
-            manualText: "📖 MANUAL DE USUARIO 04UX.COM (LENOX JG):\n1. Ingresa cualquier número UX (incluyendo el 0) y PIN para registrarte o iniciar sesión al instante.\n2. Usa NFC / ENLACE para conectar automáticamente o hablar con otra persona al acercar el teléfono.\n3. Agita el teléfono para borrar chats de forma segura."
-        },
-        ru: {
-            userInput: "UX НОМЕР", passInput: "PIN КОД", btnRegisterText: "РЕГИСТРАЦИЯ", btnLoginText: "ВОЙТИ",
-            btnNfcText: "📡 NFC / ССЫЛКА", btnManualText: "📖 ИНСТРУКЦИЯ", meshLabel: "🛡️ 04UX СЕТЬ",
-            timerLabel: "ВРЕМЯ:", targetPlaceholder: "Цель UX (Ящик)", btnReadText: "👁️ ЧАТ",
-            btnMailboxText: "📬 ЯЩИК", btnWipeText: "🗑️ ОЧИСТИТЬ", chatInputMsg: "Сообщение (1 UX)...", btnSendText: "ОТПРАВИТЬ",
-            rechargeTitle: "ПОПОЛНЕНИЕ UX (BTC)", txidInput: "TXID ТРАНЗАКЦИИ", btnConfirmRechargeText: "ПОДТВЕРДИТЬ",
-            footerTagText: "04UX.COM // ОСНОВАТЕЛЬ: LENOX JG (04-09-26)",
-            manualText: "📖 РУКОВОДСТВО 04UX.COM:\n1. Введите любой номер UX (включая 0) и PIN для входа.\n2. Используйте NFC / ССЫЛКУ для быстрого соединения с другим пользователем."
-        },
-        fr: {
-            userInput: "NUMÉRO UX", passInput: "CODE PIN", btnRegisterText: "ENREGISTRER", btnLoginText: "CONNEXION",
-            btnNfcText: "📡 NFC / LIEN", btnManualText: "📖 MANUEL", meshLabel: "🛡️ 04UX MESH",
-            timerLabel: "TEMPS:", targetPlaceholder: "UX Cible (Boîte)", btnReadText: "👁️ CHAT",
-            btnMailboxText: "📬 BOÎTE", btnWipeText: "🗑️ EFFACER", chatInputMsg: "Message (1 UX)...", btnSendText: "ENVOYER",
-            rechargeTitle: "RECHARGE UX (BTC)", txidInput: "TXID BLOCKCHAIN", btnConfirmRechargeText: "CONFIRMER",
-            footerTagText: "04UX.COM // FONDATEUR: LENOX JG (04-09-26)",
-            manualText: "📖 MANUEL 04UX.COM:\n1. Entrez n'importe quel numéro UX (y compris 0) et PIN.\n2. Utilisez NFC / LIEN pour connecter instantanément deux appareils."
-        },
-        ar: {
-            userInput: "رقم UX", passInput: "رمز PIN", btnRegisterText: "تسجيل", btnLoginText: "دخول",
-            btnNfcText: "📡 NFC / رابط", btnManualText: "📖 الدليل", meshLabel: "🛡️ شبكة 04UX",
-            timerLabel: "الوقت:", targetPlaceholder: "UX المستهدف", btnReadText: "👁️ دردشة",
-            btnMailboxText: "📬 البريد", btnWipeText: "🗑️ مسح", chatInputMsg: "رسالة (1 UX)...", btnSendText: "إرسال",
-            rechargeTitle: "شحن UX (BTC)", txidInput: "معرف المعاملة TXID", btnConfirmRechargeText: "تأكيد",
-            footerTagText: "04UX.COM // المؤسس: LENOX JG (26-09-04)",
-            manualText: "📖 دليل المستخدم 04UX.COM:\n1. أدخل أي رقم UX (بما في ذلك 0) لتسجيل الدخول الفوري.\n2. استخدم NFC / الرابط للاتصال المباشر."
-        },
-        ja: {
-            userInput: "UX番号", passInput: "PINコード", btnRegisterText: "登録", btnLoginText: "ログイン",
-            btnNfcText: "📡 NFC / リンク", btnManualText: "📖 マニュアル", meshLabel: "🛡️ 04UXメッシュ",
-            timerLabel: "時間:", targetPlaceholder: "宛先UX", btnReadText: "👁️ チャット",
-            btnMailboxText: "📬 受信箱", btnWipeText: "🗑️ クリア", chatInputMsg: "メッセージ (1 UX)...", btnSendText: "送信",
-            rechargeTitle: "UXチャージ (BTC)", txidInput: "TXIDを入力", btnConfirmRechargeText: "確認",
-            footerTagText: "04UX.COM // 創設者: LENOX JG (2026-09-04)",
-            manualText: "📖 04UX.COM マニュアル:\n1. 0を含む任意のUX番号とPINで即座にログイン。\n2. NFC / リンクを使って即座にチャット相手と接続。"
-        },
-        zh: {
-            userInput: "UX 账号", passInput: "PIN 密码", btnRegisterText: "注册", btnLoginText: "登录",
-            btnNfcText: "📡 NFC / 链接", btnManualText: "📖 手册", meshLabel: "🛡️ 04UX 网络",
-            timerLabel: "时间:", targetPlaceholder: "目标 UX", btnReadText: "👁️ 聊天",
-            btnMailboxText: "📬 邮箱", btnWipeText: "🗑️ 清除", chatInputMsg: "消息 (1 UX)...", btnSendText: "发送",
-            rechargeTitle: "UX 充值 (BTC)", txidInput: "输入交易哈希 TXID", btnConfirmRechargeText: "确认充值",
-            footerTagText: "04UX.COM // 创始人: LENOX JG (2026-09-04)",
-            manualText: "📖 04UX.COM 使用手册:\n1. 输入任意 UX 号码（包括 0）和密码直接登录。\n2. 使用 NFC / 链接快速连接并与对方实时收发消息。"
-        }
-    };
+    let myUx = "";
 
-    let currentLang = 'en';
-
-    function switchLanguage(lang) {
-        currentLang = lang;
-        const t = translations[lang];
-        document.getElementById('userInput').placeholder = t.userInput;
-        document.getElementById('passInput').placeholder = t.passInput;
-        document.getElementById('btnRegisterText').innerText = t.btnRegisterText;
-        document.getElementById('btnLoginText').innerText = t.btnLoginText;
-        document.getElementById('btnNfcText').innerText = t.btnNfcText;
-        document.getElementById('btnManualText').innerText = t.btnManualText;
-        document.getElementById('meshLabel').innerText = t.meshLabel;
-        document.getElementById('timerLabel').innerText = t.timerLabel;
-        document.getElementById('targetUxInput').placeholder = t.targetPlaceholder;
-        document.getElementById('btnReadText').innerText = t.btnReadText;
-        document.getElementById('btnMailboxText').innerText = t.btnMailboxText;
-        document.getElementById('btnWipeText').innerText = t.btnWipeText;
-        document.getElementById('chatInputMsg').placeholder = t.chatInputMsg;
-        document.getElementById('btnSendText').innerText = t.btnSendText;
-        document.getElementById('rechargeTitle').innerText = t.rechargeTitle;
-        document.getElementById('txidInput').placeholder = t.txidInput;
-        document.getElementById('btnConfirmRechargeText').innerText = t.btnConfirmRechargeText;
-        document.getElementById('footerTagText').innerText = t.footerTagText;
-    }
-
-    function openManual() {
-        alert(translations[currentLang].manualText);
-    }
-
-    let deviceHwId = localStorage.getItem('04ux_strict_hw_id');
-    if (!deviceHwId) {
-        deviceHwId = 'HW_04UX_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-        localStorage.setItem('04ux_strict_hw_id', deviceHwId);
-    }
-
-    /* NUEVO FONDO ANIMADO: Ciberespacio de Partículas y Red Conectada */
+    // Fondo animado ciberespacial
     const canvas = document.getElementById('cyberCanvas');
     const ctx = canvas.getContext('2d');
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -345,29 +116,22 @@
             this.color = Math.random() > 0.3 ? '#d4af37' : '#00ffcc';
         }
         update() {
-            this.x += this.vx;
-            this.y += this.vy;
+            this.x += this.vx; this.y += this.vy;
             if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
             if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
         }
         draw() {
             ctx.fillStyle = this.color;
-            ctx.shadowColor = this.color;
-            ctx.shadowBlur = 8;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.shadowColor = this.color; ctx.shadowBlur = 8;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
         }
     }
-
     const particles = [];
-    for (let i = 0; i < 65; i++) { particles.push(new Particle()); }
+    for (let i = 0; i < 65; i++) particles.push(new Particle());
 
-    function animateCyberMatrix() {
+    function animateMatrix() {
         ctx.fillStyle = "rgba(1, 2, 4, 0.3)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Conectar partículas cercanas con líneas estilo red digital
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
                 let dx = particles[i].x - particles[j].x;
@@ -376,250 +140,75 @@
                 if (dist < 110) {
                     ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 * (1 - dist / 110)})`;
                     ctx.lineWidth = 0.6;
-                    ctx.beginPath();
-                    ctx.moveTo(particles[i].x, particles[i].y);
-                    ctx.lineTo(particles[j].x, particles[j].y);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
                 }
             }
         }
-
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-        requestAnimationFrame(animateCyberMatrix);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateMatrix);
     }
-    animateCyberMatrix();
-
-    let lastX = 0, lastY = 0, lastZ = 0;
-    window.addEventListener('devicemotion', (e) => {
-        let acc = e.accelerationIncludingGravity;
-        if (!acc) return;
-        let deltaX = Math.abs(acc.x - lastX);
-        let deltaY = Math.abs(acc.y - lastY);
-        let deltaZ = Math.abs(acc.z - lastZ);
-        if (deltaX + deltaY + deltaZ > 25) {
-            executeInstantWipe();
-        }
-        lastX = acc.x; lastY = acc.y; lastZ = acc.z;
-    });
-
-    function executeInstantWipe() {
-        const chatScreen = document.getElementById('chatMessages');
-        if(chatScreen) chatScreen.innerHTML = "";
-        document.getElementById('chatPanel').style.display = "none";
-        isReadingMessages = false;
-    }
-
-    const socket = io();
-    let myUx = "";
-    let myBalance = 20;
-    let sessionTimerInterval = null;
-    let selectedTimeoutSeconds = 90;
-    let mailboxBuffer = [];
-    let isReadingMessages = false;
+    animateMatrix();
 
     async function registerNode() {
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
-        if (user === "" || pass === "") { alert("Por favor ingresa un UX y PIN válidos."); return; }
+        if (!user || !pass) { alert("Ingresa UX y PIN."); return; }
 
-        try {
-            const res = await fetch('/api/register-node', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user, pass, hwId: deviceHwId })
-            });
-            const data = await res.json();
-            if (!data.success) {
-                grantAccess(user, 20);
-                return; 
-            }
-            myBalance = data.balance;
-            grantAccess(user, myBalance);
-        } catch (err) {
-            grantAccess(user, 20);
+        const res = await fetch('/api/register-node', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user, pass })
+        });
+        const data = await res.json();
+        if (data.success) {
+            myUx = user;
+            document.getElementById('balanceDisplay').innerText = "UX: " + data.balance;
+            document.getElementById('platformPanel').style.display = "block";
+            alert(data.message);
+        } else {
+            alert(data.message);
         }
     }
 
     async function loginNode() {
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
-        if (user === "" || pass === "") { alert("Por favor ingresa tu UX y PIN."); return; }
+        if (!user || !pass) { alert("Ingresa UX y PIN."); return; }
 
-        try {
-            const res = await fetch('/api/login-node', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user, pass })
-            });
-            const data = await res.json();
-            if (!data.success) {
-                grantAccess(user, 20);
-                return;
-            }
-            myBalance = data.balance;
-            grantAccess(user, myBalance);
-        } catch (err) {
-            grantAccess(user, 20);
-        }
-    }
-
-    function grantAccess(user, balance) {
-        myUx = user;
-        myBalance = balance;
-        document.getElementById('myActiveUxLabel').innerText = "UX: " + user;
-        document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-        document.getElementById('chatPanel').style.display = "block";
-        socket.emit('register_presence', user);
-        
-        document.getElementById('ledStatus').className = "led-indicator online";
-        document.getElementById('statusText').innerText = "ONLINE";
-        document.getElementById('statusText').style.color = "#22c55e";
-
-        startChatTimer();
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const chatTarget = urlParams.get('chat');
-        if (chatTarget) {
-            document.getElementById('targetUxInput').value = chatTarget;
-            alert("📡 Conexión NFC detectada con UX: " + chatTarget + ". Inicia sesión para hablar.");
-        }
-    });
-
-    function updateChatTimerConfig() {
-        selectedTimeoutSeconds = parseInt(document.getElementById('timerSelect').value);
-        startChatTimer();
-    }
-
-    function startChatTimer() {
-        if (sessionTimerInterval) clearInterval(sessionTimerInterval);
-        let elapsed = 0;
-        sessionTimerInterval = setInterval(async () => {
-            elapsed++;
-            if (elapsed === selectedTimeoutSeconds) {
-                clearInterval(sessionTimerInterval);
-                try {
-                    await fetch('/api/deduct-time-fee', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user: myUx, amount: 2 })
-                    });
-                } catch(e){}
-                executeInstantWipe();
-            }
-        }, 1000);
-    }
-
-    function toggleReadMessages() {
-        const chatScreen = document.getElementById('chatMessages');
-        if (!isReadingMessages) {
-            isReadingMessages = true;
-            chatScreen.style.display = "block";
-            renderMailbox();
+        const res = await fetch('/api/login-node', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user, pass })
+        });
+        const data = await res.json();
+        if (data.success) {
+            myUx = user;
+            document.getElementById('balanceDisplay').innerText = "UX: " + data.balance;
+            document.getElementById('platformPanel').style.display = "block";
+            alert("Sesión iniciada con éxito.");
         } else {
-            isReadingMessages = false;
-            chatScreen.style.display = "none";
+            alert(data.message);
         }
     }
 
-    function openMailbox() {
-        const chatScreen = document.getElementById('chatMessages');
-        isReadingMessages = true;
-        chatScreen.style.display = "block";
-        renderMailbox();
-    }
-
-    socket.on('mailbox_messages', (list) => {
-        mailboxBuffer = list;
-        if (isReadingMessages) renderMailbox();
-    });
-
-    socket.on('incoming_message', (data) => {
-        mailboxBuffer.push(data);
-        if (isReadingMessages) appendMessageToScreen(data);
-    });
-
-    function renderMailbox() {
-        const chatScreen = document.getElementById('chatMessages');
-        chatScreen.innerHTML = "<div style='color:#d4af37; font-weight:bold; margin-bottom:6px;'>--- 04UX MAILBOX ---</div>";
-        mailboxBuffer.forEach(data => appendMessageToScreen(data));
-    }
-
-    function appendMessageToScreen(data) {
-        const chatScreen = document.getElementById('chatMessages');
-        const isMe = (data.senderUx === myUx);
-        const bubbleClass = isMe ? 'msg-outgoing' : 'msg-incoming';
-        chatScreen.innerHTML += `<div class="msg-bubble ${bubbleClass}"><strong>UX ${data.senderUx}:</strong> ${data.text} <span style="font-size:0.5rem; opacity:0.6; float:right;">${data.time}</span></div>`;
-        chatScreen.scrollTop = chatScreen.scrollHeight;
-    }
-
-    function sendChatMessage() {
-        const targetUx = document.getElementById('targetUxInput').value.trim();
-        const text = document.getElementById('chatInputMsg').value.trim();
-        if(!text || !targetUx) { alert("Destino UX y mensaje requeridos."); return; }
-        
-        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        appendMessageToScreen({ senderUx: myUx, text: text, time: nowTime });
-
-        socket.emit('private_chat', { senderUx: myUx, targetUx: targetUx, text: text });
-        document.getElementById('chatInputMsg').value = '';
-    }
-
-    function handleChatKey(e) { if(e.key === 'Enter') sendChatMessage(); }
-
-    socket.on('forced_logout', (msg) => {
-        alert('⚠️ ' + msg);
-        executeInstantWipe();
-    });
-
-    socket.on('update_balance', (data) => {
-        myBalance = data.balance;
-        document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-    });
-
-    function connectNfcPin() {
-        if (!myUx) { alert("Inicia sesión primero para generar tu enlace NFC."); return; }
-        const inviteUrl = window.location.origin + window.location.pathname + "?chat=" + myUx;
-        
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(inviteUrl);
-        }
-        
-        alert("📡 ENLACE NFC / CERCANÍA COPIADO:\n" + inviteUrl);
-    }
-
-    async function processRecharge() {
+    async function processBlockchainRecharge() {
         const packageKey = document.getElementById('packageSelect').value;
         const txid = document.getElementById('txidInput').value.trim();
-        if(!myUx) { alert("Inicia sesión primero."); return; }
-        if(!txid) { alert("Ingresa el TXID de la transacción."); return; }
+        if (!myUx) { alert("Inicia sesión primero."); return; }
+        if (!txid) { alert("Ingresa el TXID de la transacción."); return; }
 
-        try {
-            const res = await fetch('/api/recharge-ux', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: myUx, packageKey, txid })
-            });
-            const data = await res.json();
-            if(data.success) {
-                myBalance = data.newBalance;
-                document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-                alert(data.message);
-                document.getElementById('txidInput').value = '';
-            } else {
-                myBalance += parseInt(packageKey);
-                document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-                alert("✅ Recarga registrada con éxito. Saldo actualizado.");
-                document.getElementById('txidInput').value = '';
-            }
-        } catch(e) {
-            myBalance += parseInt(packageKey);
-            document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-            alert("✅ Recarga aplicada localmente. ¡Saldo acreditado!");
+        alert("Consultando la Blockchain de Bitcoin, por favor espera...");
+
+        const res = await fetch('/api/verify-bitcoin-payment', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: myUx, txid, packageKey })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            document.getElementById('balanceDisplay').innerText = "UX: " + data.newBalance;
+            alert(data.message);
+            document.getElementById('txidInput').value = '';
+        } else {
+            alert("⚠️ " + data.message);
         }
     }
 </script>
