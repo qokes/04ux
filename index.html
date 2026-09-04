@@ -3,27 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>04UX.COM | SUPREME ELITE PROTOCOL</title>
+    <title>04UX.COM PROTOCOL</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        /* FONDO ANIMADO CON PUNTOS NEÓN DORADOS APAGADOS Y PRENDIDOS DE MÁXIMA CALIDAD */
-        @keyframes eliteGoldGlow {
-            0% { opacity: 0.1; filter: drop-shadow(0 0 2px #5c4813); transform: scale(1); }
-            50% { opacity: 0.95; filter: drop-shadow(0 0 14px #fef08a) drop-shadow(0 0 25px #d4af37); transform: scale(1.03); }
-            100% { opacity: 0.1; filter: drop-shadow(0 0 2px #5c4813); transform: scale(1); }
+        /* FONDO DE PUNTOS DORADOS EN MOVIMIENTO SUAVE Y ELEGANTE */
+        @keyframes moveGoldDots {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
         }
         body {
-            background-color: #02040a;
-            background-image: 
-                radial-gradient(#d4af37 1.8px, transparent 1.8px),
-                radial-gradient(#9a7b1c 1.2px, transparent 1.2px);
-            background-size: 32px 32px;
-            background-position: 0 0, 16px 16px;
-            animation: eliteGoldGlow 3.5s ease-in-out infinite;
+            background-color: #030712;
+            background-image: radial-gradient(rgba(212, 175, 55, 0.35) 1.5px, transparent 1.5px);
+            background-size: 25px 25px;
+            animation: moveGoldDots 15s linear infinite;
             color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 10px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -34,23 +30,23 @@
             max-width: 390px;
             width: 100%;
             text-align: center;
-            background: rgba(10, 15, 30, 0.96);
-            backdrop-filter: blur(20px);
-            padding: 16px;
-            border-radius: 18px;
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(212, 175, 55, 0.15);
+            background: rgba(11, 17, 32, 0.94);
+            backdrop-filter: blur(14px);
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            position: relative;
+            z-index: 2;
         }
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            padding-bottom: 8px;
+            margin-bottom: 10px;
         }
-        .logo { font-size: 1.15rem; color: #fef08a; font-weight: 900; letter-spacing: 1px; }
-        .badge-group { display: flex; gap: 6px; }
+        .logo { font-size: 1.1rem; color: #fef08a; font-weight: bold; }
+        .badge-group { display: flex; gap: 5px; }
         .lang-badge, .enc-badge {
             font-size: 0.65rem;
             padding: 4px 8px;
@@ -58,10 +54,10 @@
             font-weight: bold;
         }
         .lang-badge { background: #16a34a; color: white; cursor: pointer; }
-        .enc-badge { background: #ca8a04; color: #02040a; }
+        .enc-badge { background: #ca8a04; color: #030712; }
 
         .title-protocol {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: bold;
             margin-bottom: 10px;
             display: flex;
@@ -72,15 +68,15 @@
         .verified-badge {
             background: #16a34a;
             color: white;
-            font-size: 0.65rem;
-            padding: 3px 8px;
+            font-size: 0.7rem;
+            padding: 2px 6px;
             border-radius: 12px;
             font-weight: bold;
             display: none;
         }
 
         .input-box {
-            background: #02040a;
+            background: #020617;
             border: 2px solid #334155;
             border-radius: 10px;
             padding: 11px;
@@ -91,9 +87,8 @@
             text-align: center;
             margin-bottom: 8px;
             outline: none;
-            transition: border-color 0.3s;
         }
-        .input-box:focus { border-color: #d4af37; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+        .input-box:focus { border-color: #d4af37; }
 
         .btn {
             width: 100%;
@@ -101,40 +96,24 @@
             border-radius: 10px;
             border: none;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             cursor: pointer;
             margin-bottom: 8px;
-            transition: opacity 0.2s;
         }
-        .btn:active { opacity: 0.8; }
         .btn-register { background-color: #db2777; color: white; }
         .btn-login { background-color: #16a34a; color: white; }
-        .btn-default { background-color: #1e293b; color: #fef08a; border: 1px solid #475569; }
+        .btn-default { background-color: #1e293b; color: #fef08a; border: 1px solid #334155; }
         .btn-pay { background-color: #dc2626; color: white; }
         .btn-boss { background-color: #9333ea; color: white; display: none; }
 
-        /* TEMPORIZADOR DE SEGURIDAD EN VIVO */
-        .timer-box {
-            background: rgba(220, 38, 38, 0.15);
-            border: 1px solid #dc2626;
-            color: #fca5a5;
-            font-size: 0.7rem;
-            padding: 6px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        /* PANEL DE CHAT QUE SE ACTIVA AL INICIAR SESIÓN O REGISTRARSE */
         #chatPanel {
             display: none;
-            background: #02040a;
-            border: 1px solid #475569;
+            background: #020617;
+            border: 1px solid #d4af37;
             border-radius: 10px;
             padding: 10px;
-            margin-top: 8px;
+            margin-top: 10px;
             text-align: left;
         }
         .chat-box {
@@ -155,16 +134,16 @@
             background: #090d16;
             border: 1px solid #334155;
             color: white;
-            padding: 7px;
+            padding: 6px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             outline: none;
         }
 
-        .wallet-display {
-            font-size: 0.6rem;
+        .wallet-text {
+            font-size: 0.65rem;
             color: #94a3b8;
-            background: #02040a;
+            background: #020617;
             padding: 6px;
             border-radius: 6px;
             border: 1px dashed #ca8a04;
@@ -175,7 +154,7 @@
         .instructions, .disclaimer {
             font-size: 0.65rem;
             color: #94a3b8;
-            background: #02040a;
+            background: #020617;
             padding: 8px;
             border-radius: 8px;
             border: 1px solid #334155;
@@ -184,11 +163,11 @@
             line-height: 1.25;
         }
         .founder {
-            margin-top: 10px;
-            font-size: 0.75rem;
+            margin-top: 8px;
+            font-size: 0.7rem;
             color: #fef08a;
-            font-weight: 900;
-            letter-spacing: 1.5px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -196,65 +175,59 @@
 
 <div class="container">
     <div class="header-top">
-        <div class="logo">04-UX ELITE</div>
+        <div class="logo">04-UX</div>
         <div class="badge-group">
             <div class="lang-badge" id="langBtn" onclick="toggleLang()">ENGLISH</div>
-            <div class="enc-badge">256-BIT SECURE</div>
+            <div class="enc-badge">SECURE</div>
         </div>
     </div>
 
     <div class="title-protocol">
-        <span>MODERN SECURE PROTOCOL</span>
-        <span class="verified-badge" id="verifiedCheck">✓ BOSS ELITE</span>
-    </div>
-
-    <!-- TEMPORIZADOR DE SESIÓN ACTIVA -->
-    <div class="timer-box">
-        <span>SESSION SECURITY LOCK:</span>
-        <span id="countdownTimer" style="font-family: monospace; font-size: 0.8rem;">14:59</span>
+        <span>04UX.COM PROTOCOL</span>
+        <span class="verified-badge" id="verifiedCheck">✓ BOSS</span>
     </div>
 
     <input type="text" id="userInput" class="input-box" placeholder="UX ID NUMBER" inputmode="numeric" oninput="checkBossRole()">
-    <input type="password" id="passInput" class="input-box" placeholder="PIN / SECURITY PASSWORD" inputmode="numeric" pattern="[0-9]*" oninput="checkBossRole()">
+    <input type="password" id="passInput" class="input-box" placeholder="PIN / PASSWORD" inputmode="numeric" pattern="[0-9]*" oninput="checkBossRole()">
 
     <button class="btn btn-register" onclick="registerNode()">REGISTER NODE</button>
-    <button class="btn btn-login" onclick="loginNode()">AUTHENTICATE LOGIN</button>
+    <button class="btn btn-login" onclick="loginNode()">LOGIN & OPEN CHAT</button>
 
-    <button class="btn btn-default" onclick="startNfcProximity()">NFC PROXIMITY MESH</button>
-    <button class="btn btn-pay" id="payBtn" onclick="openBtcPayment()">DOWNLOAD ELITE APP ($2.99 BTC)</button>
+    <button class="btn btn-default" onclick="startNfcProximity()">CONNECT VIA NFC</button>
+    <button class="btn btn-pay" id="payBtn" onclick="openBtcPayment()">DOWNLOAD APP ($2.99 BTC)</button>
 
-    <button class="btn btn-boss" id="bossShareBtn" onclick="generateFreeInviteLink()">👑 GENERATE FREE ELITE INVITATION</button>
+    <button class="btn btn-boss" id="bossShareBtn" onclick="generateFreeInviteLink()">👑 GENERATE FREE INVITATION</button>
 
-    <!-- CHAT PRIVADO DIRECTO POR NÚMERO UX -->
+    <!-- CHAT DIRECTO POR NÚMERO UX (SE ACTIVA AL ENTRAR) -->
     <div id="chatPanel">
-        <div style="font-size: 0.75rem; font-weight: bold; color: #fef08a; margin-bottom: 5px;">⚡ DIRECT UX MESH CHAT</div>
+        <div style="font-size: 0.75rem; font-weight: bold; color: #fef08a; margin-bottom: 5px;">⚡ SECURE UX MESH CHAT ACTIVE</div>
         <div class="chat-controls">
-            <input type="text" id="targetUxInput" class="chat-input" placeholder="Target UX (e.g., 55)" style="width: 105px;">
+            <input type="text" id="targetUxInput" class="chat-input" placeholder="Target UX (e.g. 55)" style="width: 105px;">
             <span style="font-size: 0.6rem; color: #94a3b8; align-self: center;">(Blank = Broadcast)</span>
         </div>
         <div class="chat-box" id="chatMessages"></div>
         <div class="chat-input-group">
-            <input type="text" id="chatInputMsg" class="chat-input" placeholder="Type secure message..." onkeypress="handleChatKey(event)">
+            <input type="text" id="chatInputMsg" class="chat-input" placeholder="Type message..." onkeypress="handleChatKey(event)">
             <button class="btn-login" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; border:none; cursor:pointer;" onclick="sendChatMessage()">SEND</button>
         </div>
     </div>
 
-    <div id="paymentVerificationSection" style="background: #02040a; padding: 8px; border-radius: 8px; border: 1px solid #334155; margin-top: 8px;">
-        <div class="wallet-display">Vault: bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
-        <input type="text" id="txidInput" class="input-box" placeholder="PASTE BTC TXID TO UNLOCK DOWNLOAD" style="font-size: 0.75rem; margin-bottom: 6px;">
-        <button class="btn btn-login" onclick="verifyAndDownload()">VERIFY TRANSACTION & DOWNLOAD</button>
+    <div id="paymentVerificationSection" style="background: #020617; padding: 8px; border-radius: 8px; border: 1px solid #334155; margin-top: 8px;">
+        <div class="wallet-text" id="displayWalletLabel">Vault: bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+        <input type="text" id="txidInput" class="input-box" placeholder="PASTE BTC TXID AFTER PAYMENT" style="font-size: 0.75rem; margin-bottom: 6px;">
+        <button class="btn btn-login" onclick="verifyAndDownload()">VERIFY & DOWNLOAD</button>
     </div>
 
     <div class="instructions" id="guideText">
-        <strong>Elite Execution Guide:</strong><br>
-        1. Input your UX & Password (Boss: 0 / 197126).<br>
-        2. Direct Chat: Enter target UX number to talk privately.<br>
-        3. Real BTC payments routed direct to your vault.
+        <strong>Guide:</strong><br>
+        1. Enter UX & Password (Boss: 0 / 197126).<br>
+        2. Register or Login to unlock your direct UX chat.<br>
+        3. Real BTC payments route directly to your vault.
     </div>
 
     <div class="disclaimer" id="disclaimerText">
-        <strong>Terms:</strong> 04UX Supreme Protocol. Fully decentralized.<br><br>
-        <label><input type="checkbox" id="termsCheck" checked> I accept full operational responsibility</label>
+        <strong>Terms:</strong> 04UX protocol. 100% user control.<br><br>
+        <label><input type="checkbox" id="termsCheck" checked> I accept responsibility</label>
     </div>
 
     <div class="founder">FOUNDER: LENOX JG</div>
@@ -265,17 +238,6 @@
     let currentLang = 'EN';
     const btcAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
 
-    // TEMPORIZADOR CUENTA REGRESIVA
-    let timeLeft = 900; // 15 minutos
-    setInterval(() => {
-        if(timeLeft > 0) {
-            timeLeft--;
-            let mins = Math.floor(timeLeft / 60);
-            let secs = timeLeft % 60;
-            document.getElementById('countdownTimer').innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        }
-    }, 1000);
-
     function toggleLang() {
         currentLang = currentLang === 'EN' ? 'ES' : 'EN';
         document.getElementById('langBtn').innerText = currentLang === 'EN' ? 'ENGLISH' : 'ESPAÑOL';
@@ -283,11 +245,11 @@
         const disc = document.getElementById('disclaimerText');
 
         if(currentLang === 'ES') {
-            guide.innerHTML = `<strong>Guía Elite:</strong><br>1. Ingresa UX y Contraseña (Jefe: 0 / 197126).<br>2. Chat Directo: Escribe el número UX destino para hablar en privado.<br>3. Pagos BTC reales a tu bóveda oficial.`;
-            disc.innerHTML = `<strong>Términos:</strong> Protocolo 04UX Supreme. 100% descentralizado.<br><br><label><input type="checkbox" id="termsCheck" checked> Acepto la responsabilidad operativa total</label>`;
+            guide.innerHTML = `<strong>Guía:</strong><br>1. Ingresa UX y Contraseña (Jefe: 0 / 197126).<br>2. Regístrate o Inicia sesión para activar tu chat UX.<br>3. Pagos BTC reales a tu bóveda personal.`;
+            disc.innerHTML = `<strong>Términos:</strong> Protocolo 04UX. Control total del usuario.<br><br><label><input type="checkbox" id="termsCheck" checked> Acepto la responsabilidad</label>`;
         } else {
-            guide.innerHTML = `<strong>Elite Execution Guide:</strong><br>1. Input your UX & Password (Boss: 0 / 197126).<br>2. Direct Chat: Enter target UX number to talk privately.<br>3. Real BTC payments routed direct to your vault.`;
-            disc.innerHTML = `<strong>Terms:</strong> 04UX Supreme Protocol. Fully decentralized.<br><br><label><input type="checkbox" id="termsCheck" checked> I accept full operational responsibility</label>`;
+            guide.innerHTML = `<strong>Guide:</strong><br>1. Enter UX & Password (Boss: 0 / 197126).<br>2. Register or Login to unlock your direct UX chat.<br>3. Real BTC payments route directly to your vault.`;
+            disc.innerHTML = `<strong>Terms:</strong> 04UX protocol. 100% user control.<br><br><label><input type="checkbox" id="termsCheck" checked> I accept responsibility</label>`;
         }
     }
 
@@ -298,19 +260,16 @@
         const paySection = document.getElementById('paymentVerificationSection');
         const payBtn = document.getElementById('payBtn');
         const checkMark = document.getElementById('verifiedCheck');
-        const chatPanel = document.getElementById('chatPanel');
 
         if (user === "0" && pass === "197126") {
             bossBtn.style.display = "block";
             paySection.style.display = "none";
-            payBtn.innerText = currentLang === 'EN' ? 'DOWNLOAD AS BOSS (FREE ELITE)' : 'DESCARGAR COMO JEFE (GRATIS ELITE)';
+            payBtn.innerText = currentLang === 'EN' ? 'DOWNLOAD AS BOSS (FREE)' : 'DESCARGAR COMO JEFE (GRATIS)';
             checkMark.style.display = "inline-block";
-            chatPanel.style.display = "block";
-            socket.emit('join_ux', "0");
         } else {
             bossBtn.style.display = "none";
             paySection.style.display = "block";
-            payBtn.innerText = currentLang === 'EN' ? 'DOWNLOAD ELITE APP ($2.99 BTC)' : 'DESCARGAR APP ELITE ($2.99 BTC)';
+            payBtn.innerText = currentLang === 'EN' ? 'DOWNLOAD APP ($2.99 BTC)' : 'DESCARGAR APP ($2.99 BTC)';
             checkMark.style.display = "none";
         }
     }
@@ -318,39 +277,49 @@
     function registerNode() {
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
-        if (user === "0") { alert('Reserved node ID.'); return; }
+        if (user === "0") { alert('Reserved node.'); return; }
         if (!user || !pass) { alert('Enter UX ID and password.'); return; }
-        localStorage.setItem('04ux_elite_' + user, pass);
-        alert('Node registered successfully in secure storage!');
+        localStorage.setItem('04ux_user_' + user, pass);
+        
+        // ACTIVAR CHAT AUTOMÁTICO AL REGISTRARSE
+        alert('Node registered successfully! Chat activated.');
+        activateChatSession(user);
     }
 
     function loginNode() {
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
+        
         if (user === "0" && pass === "197126") {
-            alert('Boss Elite Access Granted ✓');
-            document.getElementById('chatPanel').style.display = "block";
-            socket.emit('join_ux', user);
+            alert('Boss Access Granted ✓');
+            activateChatSession(user);
             return;
         }
-        if (localStorage.getItem('04ux_elite_' + user) === pass) {
-            alert('Elite Access Granted');
-            document.getElementById('chatPanel').style.display = "block";
-            socket.emit('join_ux', user);
+
+        if (localStorage.getItem('04ux_user_' + user) === pass) {
+            alert('Access Granted. Chat connected.');
+            activateChatSession(user);
         } else {
-            alert('Invalid node credentials.');
+            alert('Invalid credentials or node not registered.');
         }
+    }
+
+    function activateChatSession(user) {
+        document.getElementById('chatPanel').style.display = "block";
+        socket.emit('join_ux', user);
+        const chatBox = document.getElementById('chatMessages');
+        chatBox.innerHTML += `<div><strong style="color: #16a34a;">System:</strong> Connected to network as UX ${user}.</div>`;
     }
 
     function openBtcPayment() {
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
         if (user === "0" && pass === "197126") {
-            window.location.href = "/download/04ux-supreme-elite-system.zip";
+            window.location.href = "/download/04ux-system-package.zip";
             return;
         }
-        if(confirm(`Send exactly $2.99 USD in BTC to your Official Vault:\n\n${btcAddress}`)) {
-            window.location.href = `bitcoin:${btcAddress}?amount=0.00005&label=04UX_Elite`;
+        if(confirm(`Send exactly $2.99 USD in BTC to your Vault:\n\n${btcAddress}`)) {
+            window.location.href = `bitcoin:${btcAddress}?amount=0.00005&label=04UX`;
         }
     }
 
@@ -363,14 +332,14 @@
             body: JSON.stringify({ user, pass })
         });
         const data = await res.json();
-        if(data.success) prompt('Copy free elite invite link:', window.location.origin + data.inviteLink);
+        if(data.success) prompt('Copy free invite link:', window.location.origin + data.inviteLink);
     }
 
     async function verifyAndDownload() {
         const txid = document.getElementById('txidInput').value.trim();
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
-        if(!txid) { alert('Enter blockchain TXID.'); return; }
+        if(!txid) { alert('Enter TXID.'); return; }
         
         const res = await fetch('/api/verify-payment', {
             method: 'POST',
@@ -381,12 +350,12 @@
         if(data.success) {
             window.location.href = data.downloadUrl;
         } else {
-            alert('Verification Error: ' + data.message);
+            alert('Error: ' + data.message);
         }
     }
 
     function sendChatMessage() {
-        const user = document.getElementById('userInput').value.trim() || "GuestNode";
+        const user = document.getElementById('userInput').value.trim() || "Guest";
         const targetUx = document.getElementById('targetUxInput').value.trim();
         const text = document.getElementById('chatInputMsg').value.trim();
         if(!text) return;
@@ -410,11 +379,11 @@
             try {
                 const ndef = new NDEFReader();
                 await ndef.scan();
-                alert('NFC Mesh Proximity Active.');
-            } catch(e) { alert('NFC hardware error.'); }
+                alert('NFC Proximity active.');
+            } catch(e) { alert('NFC error.'); }
         } else {
-            if (navigator.share) navigator.share({ title: '04UX Elite', url: window.location.href }).catch(()=>{});
-            else alert('Mesh proximity active via secure broadcast.');
+            if (navigator.share) navigator.share({ title: '04UX', url: window.location.href }).catch(()=>{});
+            else alert('Proximity active.');
         }
     }
 </script>
