@@ -4,9 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>04UX.COM PROTOCOL</title>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
+        @keyframes bgMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 100px; }
+        }
         body {
-            background-color: #0d1117;
+            background-color: #050b14;
+            background-image: 
+                radial-gradient(circle, #1f6feb15 1px, transparent 1px),
+                linear-gradient(to bottom, #050b14, #0d1117);
+            background-size: 30px 30px;
+            animation: bgMove 20s linear infinite;
             color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
@@ -14,11 +24,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
         .container {
-            max-width: 380px;
+            max-width: 390px;
             width: 100%;
             text-align: center;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 15px;
+            border-radius: 14px;
+            border: 1px solid #30363d;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
         }
         .header-top {
             display: flex;
@@ -40,18 +58,30 @@
         .title-protocol {
             font-size: 1rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             color: #f0f6fc;
             text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Inputs y Botones Predeterminados Originales */
+        .verified-badge {
+            background: #238636;
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-weight: bold;
+            display: none;
+        }
+
         .input-box {
             background: #161b22;
             border: 2px solid #30363d;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 1.4rem;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.1rem;
             color: #58a6ff;
             width: 100%;
             box-sizing: border-box;
@@ -74,6 +104,52 @@
         .btn-register { background-color: #db61a2; color: white; }
         .btn-login { background-color: #238636; color: white; }
         .btn-default { background-color: #21262d; color: #58a6ff; border: 1px solid #30363d; }
+        .btn-pay { background-color: #da3633; color: white; }
+        .btn-boss { background-color: #a371f7; color: white; display: none; }
+
+        #chatPanel {
+            display: none;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: left;
+        }
+        .chat-box {
+            height: 110px;
+            overflow-y: auto;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            padding: 8px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: #c9d1d9;
+        }
+        .chat-input-group { display: flex; gap: 5px; }
+        .chat-input {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: white;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .instructions {
+            font-size: 0.68rem;
+            color: #8b949e;
+            background: #161b22;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            margin-top: 10px;
+            text-align: left;
+            line-height: 1.3;
+        }
 
         .disclaimer {
             font-size: 0.65rem;
@@ -82,11 +158,11 @@
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #30363d;
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: left;
         }
         .founder {
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 0.75rem;
             color: #f0883e;
             font-weight: bold;
@@ -105,21 +181,52 @@
         </div>
     </div>
 
-    <div class="title-protocol">04UX.COM PROTOCOL</div>
+    <div class="title-protocol">
+        <span>04UX.COM PROTOCOL</span>
+        <span class="verified-badge" id="verifiedCheck">✓ BOSS</span>
+    </div>
 
-    <!-- Apartados de Usuario y Contraseña con Teclado Numérico Estricto -->
-    <input type="text" id="userInput" class="input-box" placeholder="USER ID / NODE" inputmode="numeric">
-    <input type="password" id="passInput" class="input-box" placeholder="PIN / PASSWORD" inputmode="numeric" pattern="[0-9]*">
+    <!-- Campos exactos: Arriba UX (número de usuario), Abajo Contraseña / PIN -->
+    <input type="text" id="userInput" class="input-box" placeholder="UX (USER ID NUMBER)" inputmode="numeric" oninput="checkBossRole()">
+    <input type="password" id="passInput" class="input-box" placeholder="PIN / PASSWORD" inputmode="numeric" pattern="[0-9]*" oninput="checkBossRole()">
 
-    <!-- Botones Predeterminados -->
+    <!-- Botones de Registro e Inicio -->
     <button class="btn btn-register" onclick="registerNode()">REGISTER</button>
     <button class="btn btn-login" onclick="loginNode()">LOGIN</button>
 
+    <!-- Conexión NFC y Pago de Software -->
     <button class="btn btn-default" onclick="startNfcProximity()">CONNECT VIA NFC PROXIMITY</button>
-    <button class="btn btn-default" onclick="processBitcoinPayment()">DOWNLOAD APP ($2.99 BTC)</button>
+    <button class="btn btn-pay" id="payBtn" onclick="openBtcPayment()">DOWNLOAD APP ($2.99 BTC)</button>
+
+    <!-- Panel Exclusivo para el Jefe Ux 0 con PIN 197126 -->
+    <button class="btn btn-boss" id="bossShareBtn" onclick="generateFreeInviteLink()">👑 GENERATE FREE LINK FOR GUEST</button>
+
+    <!-- Chat Global -->
+    <div id="chatPanel">
+        <div style="font-size: 0.8rem; font-weight: bold; color: #58a6ff; margin-bottom: 5px;">💬 SECURE MESH CHAT</div>
+        <div class="chat-box" id="chatMessages"></div>
+        <div class="chat-input-group">
+            <input type="text" id="chatInputMsg" class="chat-input" placeholder="Type message..." onkeypress="handleChatKey(event)">
+            <button class="btn-login" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; border:none; cursor:pointer;" onclick="sendChatMessage()">SEND</button>
+        </div>
+    </div>
+
+    <!-- Verificación de Pago para Otros Usuarios -->
+    <div id="paymentVerificationSection" style="background: #161b22; padding: 10px; border-radius: 8px; border: 1px solid #30363d; margin-top: 10px;">
+        <input type="text" id="txidInput" class="input-box" placeholder="PASTE BTC TXID AFTER PAYMENT" style="font-size: 0.85rem; margin-bottom: 8px;">
+        <button class="btn btn-login" onclick="verifyAndDownload()">VERIFY & DOWNLOAD SOFTWARE</button>
+    </div>
+
+    <!-- Guía del Sistema -->
+    <div class="instructions" id="guideText">
+        <strong>Security & Execution Guide:</strong><br>
+        1. <strong>Access:</strong> Enter UX number and password. UX 0 uses private PIN `197126`.<br>
+        2. <strong>Payments:</strong> Real BTC verification on blockchain ($2.99).<br>
+        3. <strong>Shake Sensors:</strong> <u>Shake 2x</u> = Wipe chats. <u>Shake 3x</u> = Root Purge.
+    </div>
 
     <div class="disclaimer" id="disclaimerText">
-        <strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.
+        <strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility. Founder holds absolute immunity.
         <br><br>
         <label><input type="checkbox" id="termsCheck" checked> I accept full personal responsibility</label>
     </div>
@@ -128,87 +235,209 @@
 </div>
 
 <script>
+    const socket = io();
     let currentLang = 'EN';
+    const btcAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
 
     function toggleLang() {
         currentLang = currentLang === 'EN' ? 'ES' : 'EN';
         document.getElementById('langBtn').innerText = currentLang === 'EN' ? 'ENGLISH' : 'ESPAÑOL';
+        
+        const guide = document.getElementById('guideText');
         const disc = document.getElementById('disclaimerText');
+
         if(currentLang === 'ES') {
-            disc.innerHTML = `<strong>Aviso y Términos:</strong> 04UX.COM es un protocolo estricto de conocimiento cero. Los usuarios asumen el 100% de la responsabilidad legal. El fundador posee inmunidad absoluta.<br><br><label><input type="checkbox" id="termsCheck" checked> Acepto la responsabilidad personal total</label>`;
+            guide.innerHTML = `<strong>Guía de Seguridad y Ejecución:</strong><br>1. <strong>Acceso:</strong> Ingresa tu número UX y contraseña. UX 0 usa el PIN privado ` + "`197126`" + `. <br>2. <strong>Pagos:</strong> Verificación real de BTC en blockchain ($2.99).<br>3. <strong>Sensores:</strong> <u>Agitar 2x</u> = Borrar chats. <u>Agitar 3x</u> = Purga total.`;
+            disc.innerHTML = `<strong>Aviso y Términos:</strong> 04UX.COM es un protocolo estricto de conocimiento cero. Los usuarios asumen el 100% de responsabilidad legal.<br><br><label><input type="checkbox" id="termsCheck" checked> Acepto la responsabilidad personal total</label>`;
         } else {
-            disc.innerHTML = `<strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility for their actions. The founder holds absolute immunity.<br><br><label><input type="checkbox" id="termsCheck" checked> I accept full personal responsibility</label>`;
+            guide.innerHTML = `<strong>Security & Execution Guide:</strong><br>1. <strong>Access:</strong> Enter UX number and password. UX 0 uses private PIN ` + "`197126`" + `. <br>2. <strong>Payments:</strong> Real BTC verification on blockchain ($2.99).<br>3. <strong>Shake Sensors:</strong> <u>Shake 2x</u> = Wipe chats. <u>Shake 3x</u> = Root Purge.`;
+            disc.innerHTML = `<strong>Disclaimer & Terms:</strong> 04UX.COM is a strict zero-knowledge protocol. Users assume 100% legal responsibility.<br><br><label><input type="checkbox" id="termsCheck" checked> I accept full personal responsibility</label>`;
+        }
+    }
+
+    function checkBossRole() {
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        const bossBtn = document.getElementById('bossShareBtn');
+        const paySection = document.getElementById('paymentVerificationSection');
+        const payBtn = document.getElementById('payBtn');
+        const checkMark = document.getElementById('verifiedCheck');
+        const chatPanel = document.getElementById('chatPanel');
+
+        if (user === "0" && pass === "197126") {
+            bossBtn.style.display = "block";
+            paySection.style.display = "none";
+            payBtn.innerText = currentLang === 'EN' ? 'DOWNLOAD AS BOSS (FREE)' : 'DESCARGAR COMO JEFE (GRATIS)';
+            checkMark.style.display = "inline-block";
+            chatPanel.style.display = "block";
+        } else {
+            bossBtn.style.display = "none";
+            paySection.style.display = "block";
+            payBtn.innerText = currentLang === 'EN' ? 'DOWNLOAD APP ($2.99 BTC)' : 'DESCARGAR APP ($2.99 BTC)';
+            checkMark.style.display = "none";
         }
     }
 
     function registerNode() {
-        const user = document.getElementById('userInput').value;
-        const pass = document.getElementById('passInput').value;
-        const accepted = document.getElementById('termsCheck').checked;
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
 
-        if(!accepted) {
-            alert(currentLang === 'EN' ? 'You must accept personal responsibility.' : 'Debes aceptar la responsabilidad personal.');
+        if (user === "0") {
+            alert(currentLang === 'EN' ? 'User 0 is a private reserved node.' : 'El usuario 0 es un nodo reservado privado.');
             return;
         }
         if(!user || !pass) {
-            alert(currentLang === 'EN' ? 'Please enter numeric User ID and Password.' : 'Por favor ingresa ID de usuario y contraseña numéricos.');
+            alert(currentLang === 'EN' ? 'Enter UX number and password.' : 'Ingresa tu número UX y contraseña.');
             return;
         }
-
         localStorage.setItem('04ux_user_' + user, pass);
-        alert(currentLang === 'EN' ? 'Node securely registered!' : '¡Nodo registrado de forma segura!');
+        alert(currentLang === 'EN' ? 'UX Node securely registered!' : '¡Nodo UX registrado de forma segura!');
     }
 
     function loginNode() {
-        const user = document.getElementById('userInput').value;
-        const pass = document.getElementById('passInput').value;
-        const savedPass = localStorage.getItem('04ux_user_' + user);
-
-        if(!user || !pass) {
-            alert(currentLang === 'EN' ? 'Enter credentials.' : 'Ingresa tus credenciales.');
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        
+        if (user === "0" && pass === "197126") {
+            alert(currentLang === 'EN' ? '👑 Boss Access Granted (UX 0) with Verified Check ✓' : '👑 Acceso de Jefe Concedido (UX 0) con Check Verificado ✓');
+            document.getElementById('chatPanel').style.display = "block";
             return;
         }
 
+        const savedPass = localStorage.getItem('04ux_user_' + user);
         if(savedPass && savedPass === pass) {
-            alert(currentLang === 'EN' ? 'Access Granted to 04UX.COM' : 'Acceso Concedido a 04UX.COM');
+            alert(currentLang === 'EN' ? 'Access Granted to UX Node' : 'Acceso Concedido al Nodo UX');
+            document.getElementById('chatPanel').style.display = "block";
         } else {
-            alert(currentLang === 'EN' ? 'Invalid credentials or unregistered node.' : 'Credenciales inválidas o nodo no registrado.');
+            alert(currentLang === 'EN' ? 'Invalid credentials or incorrect Boss PIN.' : 'Credenciales inválidas o PIN incorrecto.');
         }
     }
 
-    /* NFC y Acercamiento Adaptado para Android e iPhone */
+    function openBtcPayment() {
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+
+        if (user === "0" && pass === "197126") {
+            window.location.href = "/download/04ux-secure-system-package.zip";
+            return;
+        }
+
+        if(confirm(currentLang === 'EN' ? `Send exactly $2.99 USD in BTC to Official Vault:\n\n${btcAddress}\n\nCopy the TXID and paste it below.` : `Envía exactamente $2.99 USD en BTC a la Bóveda Oficial:\n\n${btcAddress}\n\nCopia el TXID y pégalo abajo.`)) {
+            window.location.href = `bitcoin:${btcAddress}?amount=0.00005&label=04UX.COM`;
+        }
+    }
+
+    async function generateFreeInviteLink() {
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        try {
+            const res = await fetch('/api/generate-boss-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user, pass })
+            });
+            const data = await res.json();
+            if(data.success) {
+                const fullLink = window.location.origin + data.inviteLink;
+                prompt(currentLang === 'EN' ? '👑 Copy this free secure download link for your guest:' : '👑 Copia este enlace de descarga gratuito para tu invitado:', fullLink);
+            } else {
+                alert('Access Denied: ' + data.message);
+            }
+        } catch(e) {
+            alert('Error generating link.');
+        }
+    }
+
+    async function verifyAndDownload() {
+        const txid = document.getElementById('txidInput').value.trim();
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+
+        if(!txid && !(user === "0" && pass === "197126")) {
+            alert(currentLang === 'EN' ? 'Enter your Bitcoin TXID.' : 'Ingresa tu TXID de Bitcoin.');
+            return;
+        }
+        alert(currentLang === 'EN' ? 'Verifying payment on blockchain...' : 'Verificando pago...');
+        try {
+            const res = await fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ txid, user, pass })
+            });
+            const data = await res.json();
+            if(data.success) {
+                alert(currentLang === 'EN' ? 'Payment verified! Downloading system...' : '¡Pago verificado! Descargando sistema...');
+                window.location.href = data.downloadUrl;
+            } else {
+                alert('Verification Failed: ' + data.message);
+            }
+        } catch(e) {
+            alert('Server connection error.');
+        }
+    }
+
+    function sendChatMessage() {
+        const user = document.getElementById('userInput').value.trim() || "Guest";
+        const msg = document.getElementById('chatInputMsg').value.trim();
+        if(!msg) return;
+
+        const isBoss = (user === "0");
+        const senderTag = isBoss ? "UX 0 ✓" : "UX " + user;
+
+        socket.emit('user_message', { sender: senderTag, text: msg });
+        document.getElementById('chatInputMsg').value = '';
+    }
+
+    function handleChatKey(e) {
+        if(e.key === 'Enter') sendChatMessage();
+    }
+
+    socket.on('broadcast_message', (data) => {
+        const chatBox = document.getElementById('chatMessages');
+        chatBox.innerHTML += `<div><strong>${data.sender}:</strong> ${data.text}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
     async function startNfcProximity() {
         if ('NDEFReader' in window) {
             try {
                 const ndef = new NDEFReader();
                 await ndef.scan();
-                alert(currentLang === 'EN' ? 'NFC Scanner active! Bring device close to another node.' : '¡Escáner NFC activo! Acerca el dispositivo a otro nodo.');
-                ndef.onreading = event => {
-                    alert(currentLang === 'EN' ? 'Node connected via NFC!' : '¡Nodo conectado vía NFC!');
-                };
-            } catch (error) {
-                alert('NFC Error: ' + error);
+                alert(currentLang === 'EN' ? 'NFC Proximity Scan Active.' : 'Escaneo NFC activo.');
+            } catch(e) {
+                alert('NFC Error: ' + e);
             }
         } else {
-            // Compatibilidad nativa para iPhone / Web Share / Proximidad por enlace de audio/perfil
             if (navigator.share) {
-                navigator.share({
-                    title: '04UX.COM Node Link',
-                    text: 'Connect to my secure 04UX node',
-                    url: window.X-Location || window.location.href
-                }).catch(() => {});
+                navigator.share({ title: '04UX Node', text: 'Secure Node Connection', url: window.location.href }).catch(() => {});
             } else {
-                alert(currentLang === 'EN' ? 'Proximity mode: Bring devices close. Web NFC requires Android Chrome or compatible hardware.' : 'Modo proximidad: Acerque los dispositivos. Web NFC requiere Chrome en Android o hardware compatible.');
+                alert(currentLang === 'EN' ? 'Proximity mode active.' : 'Modo proximidad activo.');
             }
         }
     }
 
-    function processBitcoinPayment() {
-        const btcAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // Billetera institucional 04UX
-        if (confirm(currentLang === 'EN' ? 'Send $2.99 in BTC to download app package?\n\nAddress: ' + btcAddress : '¿Enviar $2.99 en BTC para descargar el paquete de la app?\n\nDirección: ' + btcAddress)) {
-            window.location.href = "bitcoin:" + btcAddress + "?amount=0.00005&label=04UX.COM";
+    let shakeCount = 0;
+    let lastShakeTime = 0;
+    window.addEventListener('devicemotion', (event) => {
+        const acc = event.accelerationIncludingGravity;
+        if (!acc) return;
+        const totalForce = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+        if (totalForce > 22) {
+            const now = Date.now();
+            if (now - lastShakeTime > 1500) shakeCount = 0;
+            shakeCount++;
+            lastShakeTime = now;
+
+            if (shakeCount === 2) {
+                alert(currentLang === 'EN' ? 'SHAKE 2X: Wiping active chats!' : '¡AGITACIÓN 2X: Borrando chats!');
+                document.getElementById('chatMessages').innerHTML = '';
+            } else if (shakeCount >= 3) {
+                alert(currentLang === 'EN' ? 'SHAKE 3X: EMERGENCY ROOT PURGE!' : '¡AGITACIÓN 3X: PURGA TOTAL!');
+                localStorage.clear();
+                window.location.reload();
+            }
         }
-    }
+    });
 </script>
 
 </body>
