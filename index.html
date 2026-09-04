@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>04-UX // ELITE SUPREME SECURITY</title>
+    <title>04-UX // ELITE SUPREME</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         canvas#matrixBg {
@@ -31,19 +31,23 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 10px;
         }
-        .brand { font-size: 0.85rem; font-weight: 900; color: #fef08a; letter-spacing: 2px; }
+        .brand { font-size: 0.8rem; font-weight: 900; color: #fef08a; letter-spacing: 1px; }
+        .lang-select {
+            background: #020307; border: 1px solid #d4af37; color: #fef08a;
+            padding: 2px 4px; border-radius: 4px; font-size: 0.6rem; outline: none; cursor: pointer;
+        }
         .balance-badge {
-            font-size: 0.7rem; color: #22c55e; font-weight: bold;
-            background: rgba(34,197,94,0.1); padding: 2px 6px; border-radius: 4px;
+            font-size: 0.65rem; color: #22c55e; font-weight: bold;
+            background: rgba(34,197,94,0.1); padding: 2px 5px; border-radius: 4px;
             border: 1px solid rgba(34,197,94,0.3);
         }
         .status-pill {
-            display: flex; align-items: center; gap: 5px;
-            font-size: 0.6rem; background: #0b0f19; padding: 3px 6px;
+            display: flex; align-items: center; gap: 4px;
+            font-size: 0.55rem; background: #0b0f19; padding: 2px 5px;
             border-radius: 20px; border: 1px solid #1e293b;
         }
         .led-indicator {
-            width: 7px; height: 7px; border-radius: 50%;
+            width: 6px; height: 6px; border-radius: 50%;
             background-color: #ef4444; box-shadow: 0 0 6px #ef4444;
         }
         .led-indicator.online { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
@@ -55,11 +59,17 @@
         }
         .input-cyber:focus { border-color: #d4af37; }
 
+        .btn-container { display: flex; gap: 6px; margin-bottom: 6px; }
         .btn-master {
-            width: 100%; padding: 11px; border-radius: 8px; border: none;
-            font-weight: 800; font-size: 0.8rem; cursor: pointer;
+            flex: 1; padding: 10px; border-radius: 8px; border: none;
+            font-weight: 800; font-size: 0.7rem; cursor: pointer;
             background: linear-gradient(135deg, #d4af37, #9a7b20); color: #02040a;
-            letter-spacing: 1px; margin-bottom: 6px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+            letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+        .btn-login {
+            flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #d4af37;
+            font-weight: 800; font-size: 0.7rem; cursor: pointer;
+            background: #0f172a; color: #fef08a; letter-spacing: 0.5px;
         }
         .btn-action {
             width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #1e293b;
@@ -84,12 +94,16 @@
         }
         .chat-screen {
             height: 110px; overflow-y: auto; background: #020307; border: 1px solid #111827;
-            padding: 6px; font-size: 0.7rem; border-radius: 6px; margin-bottom: 6px; color: #cbd5e1;
+            padding: 6px; font-size: 0.7rem; border-radius: 6px; margin-bottom: 6px; color: #cbd5e1; display: none;
         }
         .msg-bubble { padding: 4px 8px; border-radius: 6px; max-width: 85%; word-break: break-word; margin-bottom: 4px; }
         .msg-incoming { background: #1e293b; color: #f8fafc; }
         .msg-outgoing { background: #065f46; color: #ecfdf5; margin-left: auto; }
         
+        .chat-actions-row { display: flex; gap: 4px; margin-bottom: 4px; }
+        .btn-read { background: #3b82f6; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-wipe-chat { background: #ef4444; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
+
         .chat-input-row { display: flex; gap: 4px; margin-bottom: 4px; }
         .chat-txt {
             flex: 1; background: #020307; border: 1px solid #334155; color: white;
@@ -122,6 +136,10 @@
 <div class="elite-card">
     <div class="top-bar">
         <div class="brand">04-UX ELITE</div>
+        <select id="langSelector" class="lang-select" onchange="switchLanguage(this.value)">
+            <option value="en" selected>ENGLISH</option>
+            <option value="es">ESPAÑOL</option>
+        </select>
         <div class="balance-badge" id="balanceDisplay">UX: 0</div>
         <div class="status-pill">
             <span id="ledStatus" class="led-indicator"></span>
@@ -129,44 +147,51 @@
         </div>
     </div>
 
-    <!-- CERO AUTOCOMPLETADO / CERO CONTRASEÑAS -->
-    <input type="text" id="userInput" class="input-cyber" placeholder="NÚMERO UX" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="numeric">
-    <input type="password" id="passInput" class="input-cyber" placeholder="PIN CLAVE" autocomplete="new-password" inputmode="numeric">
+    <input type="text" id="userInput" class="input-cyber" placeholder="UX NUMBER" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="numeric">
+    <input type="password" id="passInput" class="input-cyber" placeholder="PIN CODE" autocomplete="new-password" inputmode="numeric">
 
-    <button class="btn-master" onclick="masterAccess()">⚡ CONECTAR (BONO +20 UX)</button>
-    <button class="btn-action" onclick="connectNfcPin()">ENLACE NFC / COMPARTIR CHAT</button>
+    <div class="btn-container">
+        <button class="btn-master" id="btnRegisterText" onclick="registerNode()">REGISTER (+20 UX)</button>
+        <button class="btn-login" id="btnLoginText" onclick="loginNode()">LOGIN</button>
+    </div>
+    
+    <button class="btn-action" id="btnNfcText" onclick="connectNfcPin()">NFC LINK / SHARE CHAT</button>
 
     <div id="chatPanel">
         <div class="chat-header-info">
-            <span>🛡️ CHAT ENCRIPTD</span>
+            <span id="meshLabel">🛡️ MESH ENCRYPTED</span>
             <span id="myActiveUxLabel" style="color: #22c55e;">--</span>
         </div>
 
-        <!-- CONFIGURACIÓN DE TIEMPO Y AUTO-ELIMINACIÓN -->
         <div class="config-row">
-            <span>AUTO-DESTRUCCIÓN / TIEMPO:</span>
+            <span id="timerLabel">TIME LIMIT:</span>
             <select id="timerSelect" class="timer-select" onchange="updateChatTimerConfig()">
-                <option value="30">30 Segundos</option>
-                <option value="90" selected>1:30 Minutos (-2 UX)</option>
-                <option value="180">3 Minutos</option>
-                <option value="300">5 Minutos</option>
+                <option value="30">30 Seconds</option>
+                <option value="90" selected>1:30 Minutes (-2 UX)</option>
+                <option value="180">3 Minutes</option>
+                <option value="300">5 Minutes</option>
             </select>
         </div>
         
         <div style="margin-bottom: 4px;">
-            <input type="text" id="targetUxInput" class="chat-txt" placeholder="UX Destino (Opcional)" autocomplete="off" inputmode="numeric" style="width: 100%;">
+            <input type="text" id="targetUxInput" class="chat-txt" placeholder="Target UX (Optional)" autocomplete="off" inputmode="numeric" style="width: 100%;">
+        </div>
+
+        <div class="chat-actions-row">
+            <button class="btn-read" id="btnReadText" onclick="toggleReadMessages()">👁️ VIEW MESSAGES</button>
+            <button class="btn-wipe-chat" id="btnWipeText" onclick="wipeChatScreenOnly()">🗑️ END & DELETE CHAT</button>
         </div>
 
         <div class="chat-screen" id="chatMessages"></div>
 
         <div class="chat-input-row">
-            <input type="text" id="chatInputMsg" class="chat-txt" placeholder="Mensaje (1 UX)..." autocomplete="off" onkeypress="handleChatKey(event)">
-            <button class="btn-send" onclick="sendChatMessage()">ENVIAR</button>
+            <input type="text" id="chatInputMsg" class="chat-txt" placeholder="Message (1 UX)..." autocomplete="off" onkeypress="handleChatKey(event)">
+            <button class="btn-send" id="btnSendText" onclick="sendChatMessage()">SEND</button>
         </div>
     </div>
 
     <div class="recharge-box" id="rechargeSection">
-        <div style="font-size: 0.6rem; color: #fef08a; font-weight: bold; text-align: center; margin-bottom: 3px;">RECARGA UX (PAGO BTC REAL)</div>
+        <div id="rechargeTitle" style="font-size: 0.6rem; color: #fef08a; font-weight: bold; text-align: center; margin-bottom: 3px;">UX RECHARGE (REAL BTC PAYMENT)</div>
         <select id="packageSelect" class="package-select">
             <option value="250">250 UX - $2.99 USD</option>
             <option value="500">500 UX - $3.99 USD</option>
@@ -176,41 +201,98 @@
             <option value="100000">100000 UX - $499.00 USD</option>
         </select>
         <div class="wallet-text">Vault: bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
-        <input type="text" id="txidInput" class="input-cyber" placeholder="PEGAR TXID DE BLOCKCHAIN" autocomplete="off" style="font-size: 0.6rem; margin-bottom: 4px;">
-        <button class="btn-recharge" onclick="processRecharge()">CONFIRMAR RECARGA BTC</button>
+        <input type="text" id="txidInput" class="input-cyber" placeholder="PASTE BLOCKCHAIN TXID" autocomplete="off" style="font-size: 0.6rem; margin-bottom: 4px;">
+        <button class="btn-recharge" id="btnConfirmRechargeText" onclick="processRecharge()">CONFIRM BTC RECHARGE</button>
     </div>
 
-    <div class="footer-tag">AGITA 2 VECES = DESTRUCCIÓN | CAMBIO DE APP = CIERRE AUTOMÁTICO</div>
+    <div class="footer-tag" id="footerTagText">UX ACCOUNT REMAINS INTACT | CHAT WIPEABLE AT WILL</div>
 </div>
 
 <script>
-    // Identificador de hardware único anti-multicuentas
+    const translations = {
+        en: {
+            userInput: "UX NUMBER",
+            passInput: "PIN CODE",
+            btnRegisterText: "REGISTER (+20 UX)",
+            btnLoginText: "LOGIN",
+            btnNfcText: "NFC LINK / SHARE CHAT",
+            meshLabel: "🛡️ MESH ENCRYPTED",
+            timerLabel: "TIME LIMIT:",
+            targetPlaceholder: "Target UX (Optional)",
+            btnReadText: "👁️ VIEW MESSAGES",
+            btnWipeText: "🗑️ END & DELETE CHAT",
+            chatInputMsg: "Message (1 UX)...",
+            btnSendText: "SEND",
+            rechargeTitle: "UX RECHARGE (REAL BTC PAYMENT)",
+            txidInput: "PASTE BLOCKCHAIN TXID",
+            btnConfirmRechargeText: "CONFIRM BTC RECHARGE",
+            footerTagText: "UX ACCOUNT REMAINS INTACT | CHAT WIPEABLE AT WILL",
+            alertFill: "Enter UX number and PIN.",
+            alertTimeUp: "⏱️ Time limit reached. Fee applied and session ended.",
+            alertWiped: "🗑️ Chat screen deleted successfully. Your UX account and balance remain intact.",
+            alertLoginFirst: "Please login or register first.",
+            alertCopied: "🔗 NFC / Direct Link copied:\n",
+            alertRechargeNeed: "Please login first and enter a TXID."
+        },
+        es: {
+            userInput: "NÚMERO UX",
+            passInput: "PIN CLAVE",
+            btnRegisterText: "REGISTRARSE (+20 UX)",
+            btnLoginText: "INICIAR SESIÓN",
+            btnNfcText: "ENLACE NFC / COMPARTIR CHAT",
+            meshLabel: "🛡️ MESH ENCRIPTADO",
+            timerLabel: "TIEMPO LÍMITE:",
+            targetPlaceholder: "UX Destino (Opcional)",
+            btnReadText: "👁️ VER MENSAJES",
+            btnWipeText: "🗑️ TERMINAR Y ELIMINAR CHAT",
+            chatInputMsg: "Mensaje (1 UX)...",
+            btnSendText: "ENVIAR",
+            rechargeTitle: "RECARGA UX (PAGO BTC REAL)",
+            txidInput: "PEGAR TXID DE BLOCKCHAIN",
+            btnConfirmRechargeText: "CONFIRMAR RECARGA BTC",
+            footerTagText: "EL UX PERMANECE ÍNTEGRO | CHAT ELIMINABLE A VOLUNTAD",
+            alertFill: "Introduce número UX y PIN.",
+            alertTimeUp: "⏱️ Tiempo cumplido. Aplicando tarifa y cierre de sesión.",
+            alertWiped: "🗑️ Chat eliminado de pantalla con éxito. Tu cuenta UX y saldo permanecen intactos.",
+            alertLoginFirst: "Inicia sesión o regístrate primero.",
+            alertCopied: "🔗 Enlace NFC / Directo copiado:\n",
+            alertRechargeNeed: "Inicia sesión primero e ingresa un TXID."
+        }
+    };
+
+    let currentLang = 'en';
+
+    function switchLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
+        document.getElementById('userInput').placeholder = t.userInput;
+        document.getElementById('passInput').placeholder = t.passInput;
+        document.getElementById('btnRegisterText').innerText = t.btnRegisterText;
+        document.getElementById('btnLoginText').innerText = t.btnLoginText;
+        document.getElementById('btnNfcText').innerText = t.btnNfcText;
+        document.getElementById('meshLabel').innerText = t.meshLabel;
+        document.getElementById('timerLabel').innerText = t.timerLabel;
+        document.getElementById('targetUxInput').placeholder = t.targetPlaceholder;
+        document.getElementById('btnReadText').innerText = t.btnReadText;
+        document.getElementById('btnWipeText').innerText = t.btnWipeText;
+        document.getElementById('chatInputMsg').placeholder = t.chatInputMsg;
+        document.getElementById('btnSendText').innerText = t.btnSendText;
+        document.getElementById('rechargeTitle').innerText = t.rechargeTitle;
+        document.getElementById('txidInput').placeholder = t.txidInput;
+        document.getElementById('btnConfirmRechargeText').innerText = t.btnConfirmRechargeText;
+        document.getElementById('footerTagText').innerText = t.footerTagText;
+    }
+
     let deviceHwId = localStorage.getItem('04ux_hw_id');
     if (!deviceHwId) {
         deviceHwId = 'HW_ELITE_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
         localStorage.setItem('04ux_hw_id', deviceHwId);
     }
-
-    // Huella digital estricta del navegador actual para evitar saltos entre navegadores
     const browserSignature = navigator.userAgent + navigator.language + screen.width;
 
-    // DETECCIÓN DE CAMBIO DE APP, PESTAÑA O WEB -> CIERRE AUTOMÁTICO INSTANTÁNEO
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            executeInstantWipe();
-        }
-    });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) executeInstantWipe(); });
+    window.addEventListener('blur', () => { executeInstantWipe(); });
 
-    window.addEventListener('blur', () => {
-        executeInstantWipe();
-    });
-
-    window.addEventListener('beforeunload', () => {
-        localStorage.clear();
-        sessionStorage.clear();
-    });
-
-    // Fondo Matrix
     const canvas = document.getElementById('matrixBg');
     const ctx = canvas.getContext('2d');
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -237,7 +319,6 @@
     }
     setInterval(drawMatrix, 40);
 
-    // Agitar 2 veces (0.1s borrado total)
     let lastX = 0, lastY = 0, lastZ = 0, shakeCount = 0, lastShakeTime = 0;
     window.addEventListener('devicemotion', (e) => {
         const acc = e.accelerationIncludingGravity;
@@ -264,25 +345,21 @@
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const targetChat = urlParams.get('chat');
-        if (targetChat) {
-            document.getElementById('targetUxInput').value = targetChat;
-        }
+        if (targetChat) { document.getElementById('targetUxInput').value = targetChat; }
     });
 
     const socket = io();
     let myUx = "";
     let myBalance = 0;
     let sessionTimerInterval = null;
-    let selectedTimeoutSeconds = 90; // Por defecto 1:30 minutos
+    let selectedTimeoutSeconds = 90;
+    let pendingMessagesBuffer = [];
+    let isReadingMessages = false;
 
-    async function masterAccess() {
+    async function registerNode() {
         const user = document.getElementById('userInput').value.trim();
         const pass = document.getElementById('passInput').value.trim();
-
-        if (!user || !pass) {
-            alert('Introduce número UX y PIN.');
-            return;
-        }
+        if (!user || !pass) { alert(translations[currentLang].alertFill); return; }
 
         try {
             const res = await fetch('/api/register-node', {
@@ -291,17 +368,28 @@
                 body: JSON.stringify({ user, pass, hwId: deviceHwId, browserSignature })
             });
             const data = await res.json();
-
-            if (!data.success) {
-                alert(data.message);
-                return;
-            }
-
+            if (!data.success) { alert(data.message); return; }
             myBalance = data.balance;
             grantAccess(user);
-        } catch (err) {
-            alert('Error de red con el nodo central.');
-        }
+        } catch (err) { alert('Network error.'); }
+    }
+
+    async function loginNode() {
+        const user = document.getElementById('userInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if (!user || !pass) { alert(translations[currentLang].alertFill); return; }
+
+        try {
+            const res = await fetch('/api/login-node', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user, pass })
+            });
+            const data = await res.json();
+            if (!data.success) { alert(data.message); return; }
+            myBalance = data.balance;
+            grantAccess(user);
+        } catch (err) { alert('Network error.'); }
     }
 
     function grantAccess(user) {
@@ -324,54 +412,74 @@
         startChatTimer();
     }
 
-    // Temporizador de sesión y descuento automático de 2 UX (o según el tiempo configurado)
     function startChatTimer() {
         if (sessionTimerInterval) clearInterval(sessionTimerInterval);
-        
         let elapsed = 0;
         sessionTimerInterval = setInterval(async () => {
             elapsed++;
-            // Si el usuario configuró 1:30 (90s) y se cumple el tiempo exacto
             if (elapsed === selectedTimeoutSeconds) {
                 clearInterval(sessionTimerInterval);
-                
-                // Descontar tarifa de tiempo al servidor (2 UX)
                 try {
-                    const res = await fetch('/api/deduct-time-fee', {
+                    await fetch('/api/deduct-time-fee', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user: myUx, amount: 2 })
                     });
-                    const data = await res.json();
-                    if (data.success) {
-                        myBalance = data.newBalance;
-                        document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-                    }
                 } catch(e) {}
-
-                alert('⏱️ Tiempo de sesión cumplido (' + (selectedTimeoutSeconds/60).toFixed(1) + ' min). Aplicando auto-eliminación y cierre de seguridad.');
+                alert(translations[currentLang].alertTimeUp);
                 executeInstantWipe();
             }
         }, 1000);
     }
 
-    socket.on('forced_logout', (msg) => {
-        alert('⚠️ ' + msg);
-        executeInstantWipe();
+    function toggleReadMessages() {
+        const chatScreen = document.getElementById('chatMessages');
+        if (!isReadingMessages) {
+            isReadingMessages = true;
+            chatScreen.style.display = "block";
+            renderBufferedMessages();
+        } else {
+            isReadingMessages = false;
+            chatScreen.style.display = "none";
+        }
+    }
+
+    function wipeChatScreenOnly() {
+        const chatScreen = document.getElementById('chatMessages');
+        chatScreen.innerHTML = "";
+        pendingMessagesBuffer = [];
+        chatScreen.style.display = "none";
+        isReadingMessages = false;
+        alert(translations[currentLang].alertWiped);
+    }
+
+    socket.on('pending_messages_batch', (list) => {
+        pendingMessagesBuffer.push(...list);
+        if (isReadingMessages) renderBufferedMessages();
     });
 
-    socket.on('update_balance', (data) => {
-        myBalance = data.balance;
-        document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
-    });
-
-    socket.on('update_status', (data) => {
-        if(data.ux === myUx && !data.online) {
-            document.getElementById('ledStatus').className = "led-indicator";
-            document.getElementById('statusText').innerText = "OFF";
-            document.getElementById('statusText').style.color = "#ef4444";
+    socket.on('incoming_message', (data) => {
+        pendingMessagesBuffer.push(data);
+        if (isReadingMessages) {
+            appendMessageToScreen(data);
         }
     });
+
+    function renderBufferedMessages() {
+        const chatScreen = document.getElementById('chatMessages');
+        chatScreen.innerHTML = "";
+        pendingMessagesBuffer.forEach(data => {
+            appendMessageToScreen(data);
+        });
+    }
+
+    function appendMessageToScreen(data) {
+        const chatScreen = document.getElementById('chatMessages');
+        const isMe = (data.senderUx === myUx);
+        const bubbleClass = isMe ? 'msg-outgoing' : 'msg-incoming';
+        chatScreen.innerHTML += `<div class="msg-bubble ${bubbleClass}"><strong>UX ${data.senderUx}:</strong> ${data.text} <span style="font-size:0.5rem; opacity:0.6; float:right;">${data.time}</span></div>`;
+        chatScreen.scrollTop = chatScreen.scrollHeight;
+    }
 
     function sendChatMessage() {
         const targetUx = document.getElementById('targetUxInput').value.trim();
@@ -383,26 +491,28 @@
 
     function handleChatKey(e) { if(e.key === 'Enter') sendChatMessage(); }
 
-    socket.on('incoming_message', (data) => {
-        const chatScreen = document.getElementById('chatMessages');
-        const isMe = (data.senderUx === myUx);
-        const bubbleClass = isMe ? 'msg-outgoing' : 'msg-incoming';
-        chatScreen.innerHTML += `<div class="msg-bubble ${bubbleClass}"><strong>UX ${data.senderUx}:</strong> ${data.text} <span style="font-size:0.5rem; opacity:0.6; float:right;">${data.time}</span></div>`;
-        chatScreen.scrollTop = chatScreen.scrollHeight;
+    socket.on('forced_logout', (msg) => {
+        alert('⚠️ ' + msg);
+        executeInstantWipe();
+    });
+
+    socket.on('update_balance', (data) => {
+        myBalance = data.balance;
+        document.getElementById('balanceDisplay').innerText = "UX: " + myBalance;
     });
 
     function connectNfcPin() {
-        if (!myUx) { alert('Inicia sesión primero.'); return; }
+        if (!myUx) { alert(translations[currentLang].alertLoginFirst); return; }
         const inviteUrl = window.location.origin + "/?chat=" + myUx;
         navigator.clipboard.writeText(inviteUrl);
-        alert('🔗 Enlace de conexión directa copiado:\n' + inviteUrl + '\n(Listo para compartir por link, app de chat o proximidad NFC)');
+        alert(translations[currentLang].alertCopied + inviteUrl);
     }
 
     async function processRecharge() {
         const packageKey = document.getElementById('packageSelect').value;
         const txid = document.getElementById('txidInput').value.trim();
-        if(!myUx) { alert('Inicia sesión primero.'); return; }
-        if(!txid) { alert('Ingresa el TXID de Bitcoin.'); return; }
+        if(!myUx) { alert(translations[currentLang].alertRechargeNeed); return; }
+        if(!txid) { alert('Enter TXID.'); return; }
 
         try {
             const res = await fetch('/api/recharge-ux', {
@@ -420,7 +530,7 @@
                 alert('Error: ' + data.message);
             }
         } catch(e) {
-            alert('Error de red al procesar el pago BTC.');
+            alert('Error de red.');
         }
     }
 </script>
