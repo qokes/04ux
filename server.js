@@ -18,13 +18,13 @@ app.use(express.static(path.join(__dirname)));
 const MY_PERSONAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
 const verifiedTransactions = new Set();
 const activeSessions = new Map(); 
-const offlineMessages = new Map(); 
-const registeredHardware = new Map(); 
-const userBrowsers = new Map();       
-const blacklistedIPs = new Set();     
 
-const userBalances = new Map(); 
-const userPins = new Map(); 
+const offlineMessages = new Map();     
+const hardwareToUser = new Map();      
+const userToHardware = new Map();      
+const userPins = new Map();            
+const userBalances = new Map();        
+const blacklistedIPs = new Set();        
 
 const uxPackages = {
     '250': { ux: 250, usd: 2.99 },
@@ -42,7 +42,7 @@ function getClientIP(req) {
 app.use((req, res, next) => {
     const ip = getClientIP(req);
     if (blacklistedIPs.has(ip)) {
-        return res.status(403).json({ success: false, message: "Access Denied / Acceso Denegado." });
+        return res.status(403).json({ success: false, message: "Security Block: Multi-account attempt detected." });
     }
     next();
 });
@@ -75,11 +75,11 @@ function verifyBitcoinTransaction(txid, expectedUsd, callback) {
 }
 
 app.post('/api/register-node', (req, res) => {
-    const { user, pass, hwId, browserSignature } = req.body;
+    const { user, pass, hwId } = req.body;
     const ip = getClientIP(req);
 
     if (!user || !pass || !hwId) {
-        return res.status(400).json({ success: false, message: "Incomplete data / Datos incompletos." });
+        return res.status(400).json({ success: false, message: "Incomplete data." });
     }
 
     if (user === "0" && pass === "197126") {
@@ -87,33 +87,37 @@ app.post('/api/register-node', (req, res) => {
         return res.json({ success: true, balance: userBalances.get(user), message: "Master access granted." });
     }
 
-    if (userPins.has(user)) {
-        return res.status(400).json({ success: false, message: "UX Number already registered. Use Login / UX ya registrado. Use Iniciar Sesión." });
-    }
-
-    if (registeredHardware.has(hwId)) {
-        const existingUser = registeredHardware.get(hwId);
-        if (existingUser !== user) {
+    if (hardwareToUser.has(hwId)) {
+        const ownerUser = hardwareToUser.get(hwId);
+        if (ownerUser !== user) {
             blacklistedIPs.add(ip);
-            return res.status(403).json({ success: false, message: "Security Lock: Multi-accounts prohibited / Bloqueo: Prohibido multicuentas." });
+            return res.status(403).json({ 
+                success: false, 
+                message: `SECURITY LOCK: This device is already linked to UX [${ownerUser}]. Multi-accounts are forbidden.` 
+            });
         }
-    } else {
-        registeredHardware.set(hwId, user);
     }
 
-    userPins.set(user, pass);
-    userBalances.set(user, 20); // Bono automático de +20 UX al registrarse
-    userBrowsers.set(user, browserSignature);
+    if (userPins.has(user)) {
+        return res.status(400).json({ success: false, message: "UX Number already registered." });
+    }
 
-    res.json({ success: true, balance: 20, message: "Registration successful! +20 UX bonus added." });
+    if (userToHardware.has(user)) {
+        blacklistedIPs.add(ip);
+        return res.status(403).json({ success: false, message: "Security violation: Identity collision." });
+    }
+
+    hardwareToUser.set(hwId, user);
+    userToHardware.set(user, hwId);
+    userPins.set(user, pass);
+    userBalances.set(user, 20);
+
+    res.json({ success: true, balance: 20, message: "Registration successful! +20 UX bonus." });
 });
 
 app.post('/api/login-node', (req, res) => {
     const { user, pass } = req.body;
-
-    if (!user || !pass) {
-        return res.status(400).json({ success: false, message: "Incomplete data / Datos incompletos." });
-    }
+    if (!user || !pass) return res.status(400).json({ success: false, message: "Incomplete data." });
 
     if (user === "0" && pass === "197126") {
         if (!userBalances.has(user)) userBalances.set(user, 1000000);
@@ -121,7 +125,7 @@ app.post('/api/login-node', (req, res) => {
     }
 
     if (!userPins.has(user) || userPins.get(user) !== pass) {
-        return res.status(401).json({ success: false, message: "Invalid credentials / Credenciales inválidas." });
+        return res.status(401).json({ success: false, message: "Invalid credentials." });
     }
 
     res.json({ success: true, balance: userBalances.get(user) || 0, message: "Login successful." });
@@ -133,10 +137,7 @@ app.post('/api/deduct-time-fee', (req, res) => {
 
     const currentBal = userBalances.get(user) || 0;
     const fee = Number(amount) || 2;
-
-    if (currentBal < fee) {
-        return res.json({ success: false, message: "Insufficient balance for fee." });
-    }
+    if (currentBal < fee) return res.json({ success: false, message: "Insufficient balance." });
 
     const newBal = currentBal - fee;
     userBalances.set(user, newBal);
@@ -156,7 +157,6 @@ app.post('/api/recharge-ux', (req, res) => {
         const currentBalance = userBalances.get(user) || 0;
         const newBalance = currentBalance + pkg.ux;
         userBalances.set(user, newBalance);
-
         res.json({ success: true, newBalance, message: `Recharge success! +${pkg.ux} UX added.` });
     });
 });
@@ -174,8 +174,9 @@ io.on('connection', (socket) => {
         io.emit('update_status', { ux: uxNumber, online: true });
 
         if (offlineMessages.has(uxNumber)) {
-            const pending = offlineMessages.get(uxNumber);
-            socket.emit('pending_messages_batch', pending);
+            socket.emit('mailbox_messages', offlineMessages.get(uxNumber));
+        } else {
+            socket.emit('mailbox_messages', []);
         }
     });
 
@@ -183,10 +184,15 @@ io.on('connection', (socket) => {
         const sender = data.senderUx;
         const target = data.targetUx ? data.targetUx.trim() : "";
 
+        if (!target) {
+            socket.emit('incoming_message', { senderUx: "04UX", text: "⚠️ Target UX required.", time: new Date().toLocaleTimeString() });
+            return;
+        }
+
         if (sender !== "0") {
             const currentBal = userBalances.get(sender) || 0;
             if (currentBal < 1) {
-                socket.emit('incoming_message', { senderUx: "SYSTEM", text: "⚠️ Insufficient balance (0 UX).", time: new Date().toLocaleTimeString() });
+                socket.emit('incoming_message', { senderUx: "04UX", text: "⚠️ Insufficient balance (0 UX).", time: new Date().toLocaleTimeString() });
                 return;
             }
             userBalances.set(sender, currentBal - 1);
@@ -195,19 +201,14 @@ io.on('connection', (socket) => {
 
         const packet = { senderUx: sender, targetUx: target, text: data.text, time: new Date().toLocaleTimeString() };
         
-        if (target !== "") {
-            const targetSocketId = activeSessions.get(target);
-            socket.emit('incoming_message', packet);
-            
-            if (targetSocketId) {
-                io.to(targetSocketId).emit('incoming_message', packet);
-            } else {
-                if (!offlineMessages.has(target)) offlineMessages.set(target, []);
-                offlineMessages.get(target).push(packet);
-            }
-        } else {
-            io.emit('incoming_message', packet);
+        if (!offlineMessages.has(target)) offlineMessages.set(target, []);
+        offlineMessages.get(target).push(packet);
+
+        const targetSocketId = activeSessions.get(target);
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('incoming_message', packet);
         }
+        socket.emit('incoming_message', packet);
     });
 
     socket.on('disconnect', () => {
@@ -220,5 +221,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server online on port ${PORT}`);
+    console.log(`04UX.COM Elite Server online on port ${PORT} - Founder: LENOX JG`);
 });
