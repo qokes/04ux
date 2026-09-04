@@ -15,7 +15,7 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-const MY_PERSONAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
+const MY_PERSONAL_BTC_WALLET = "bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s"; 
 const verifiedTransactions = new Set();
 const activeSessions = new Map(); 
 
