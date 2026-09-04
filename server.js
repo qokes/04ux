@@ -1,225 +1,120 @@
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
+const axios = require('axios');
 const path = require('path');
-const https = require('https');
-
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*" },
-    pingTimeout: 60000,
-    pingInterval: 25000
-});
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.urlencoded({ extended: true }));
 
-const MY_PERSONAL_BTC_WALLET = "bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s"; 
-const verifiedTransactions = new Set();
-const activeSessions = new Map(); 
+// Archivos estáticos si pones tu HTML en la misma carpeta
+app.use(express.static(__dirname));
 
-const offlineMessages = new Map();     
-const hardwareToUser = new Map();      
-const userToHardware = new Map();      
-const userPins = new Map();            
-const userBalances = new Map();        
-const blacklistedIPs = new Set();        
+// TU BILLETERA REAL DE BITCOIN (Aquí deben llegar los pagos reales)
+const REAL_WALLET_ADDRESS = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
 
-const uxPackages = {
-    '250': { ux: 250, usd: 2.99 },
-    '500': { ux: 500, usd: 3.99 },
-    '1250': { ux: 1250, usd: 7.99 },
-    '2500': { ux: 2500, usd: 16.99 },
-    '10000': { ux: 10000, usd: 35.99 },
-    '100000': { ux: 100000, usd: 499.00 }
-};
+// Base de datos en memoria (puedes reemplazarla por MongoDB o SQL)
+let usersDB = {};       // { "12345": { pass: "123", balance: 20, hwId: "..." } }
+let usedTxids = new Set(); // Evita que reutilicen el mismo comprobante de pago
 
-function getClientIP(req) {
-    return req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-}
-
-app.use((req, res, next) => {
-    const ip = getClientIP(req);
-    if (blacklistedIPs.has(ip)) {
-        return res.status(403).json({ success: false, message: "Security Block: Multi-account attempt detected." });
-    }
-    next();
-});
-
-function verifyBitcoinTransaction(txid, expectedUsd, callback) {
-    if (verifiedTransactions.has(txid)) return callback(false, "TXID already used.");
-    const url = `https://blockstream.info/api/tx/${txid}`;
-    https.get(url, (res) => {
-        let data = '';
-        res.on('data', (chunk) => { data += chunk; });
-        res.on('end', () => {
-            try {
-                const tx = JSON.parse(data);
-                if (!tx || !tx.vout) return callback(false, "BTC Transaction not found.");
-                let isValid = false, totalSatoshis = 0;
-                tx.vout.forEach(out => {
-                    if (out.scriptpubkey_address === MY_PERSONAL_BTC_WALLET) {
-                        isValid = true;
-                        totalSatoshis += out.value;
-                    }
-                });
-                if (!isValid) return callback(false, "Incorrect destination wallet.");
-                if (totalSatoshis < 1000) return callback(false, "Insufficient satoshis amount.");
-                
-                verifiedTransactions.add(txid);
-                callback(true, "Verified successfully.");
-            } catch (e) { callback(false, "Blockchain parsing error."); }
-        });
-    }).on('error', () => callback(false, "Blockchain network error."));
-}
-
+// 1. Registro de Nodo
 app.post('/api/register-node', (req, res) => {
     const { user, pass, hwId } = req.body;
-    const ip = getClientIP(req);
+    if (!user || !pass) return res.json({ success: false, message: "Datos incompletos." });
 
-    if (!user || !pass || !hwId) {
-        return res.status(400).json({ success: false, message: "Incomplete data." });
+    if (usersDB[user]) {
+        return res.json({ success: false, message: "Este número UX ya está registrado." });
     }
 
-    if (user === "0" && pass === "197126") {
-        if (!userBalances.has(user)) userBalances.set(user, 1000000);
-        return res.json({ success: true, balance: userBalances.get(user), message: "Master access granted." });
-    }
-
-    if (hardwareToUser.has(hwId)) {
-        const ownerUser = hardwareToUser.get(hwId);
-        if (ownerUser !== user) {
-            blacklistedIPs.add(ip);
-            return res.status(403).json({ 
-                success: false, 
-                message: `SECURITY LOCK: This device is already linked to UX [${ownerUser}]. Multi-accounts are forbidden.` 
-            });
-        }
-    }
-
-    if (userPins.has(user)) {
-        return res.status(400).json({ success: false, message: "UX Number already registered." });
-    }
-
-    if (userToHardware.has(user)) {
-        blacklistedIPs.add(ip);
-        return res.status(403).json({ success: false, message: "Security violation: Identity collision." });
-    }
-
-    hardwareToUser.set(hwId, user);
-    userToHardware.set(user, hwId);
-    userPins.set(user, pass);
-    userBalances.set(user, 20);
-
-    res.json({ success: true, balance: 20, message: "Registration successful! +20 UX bonus." });
+    usersDB[user] = { pass, balance: 20, hwId: hwId || '' };
+    res.json({ success: true, balance: 20, message: "Nodo registrado con 20 UX iniciales." });
 });
 
+// 2. Inicio de Sesión
 app.post('/api/login-node', (req, res) => {
     const { user, pass } = req.body;
-    if (!user || !pass) return res.status(400).json({ success: false, message: "Incomplete data." });
-
-    if (user === "0" && pass === "197126") {
-        if (!userBalances.has(user)) userBalances.set(user, 1000000);
-        return res.json({ success: true, balance: userBalances.get(user), message: "Master access." });
+    if (!usersDB[user]) {
+        // Si no existe, lo creamos automáticamente para agilizar
+        usersDB[user] = { pass, balance: 20 };
+    }
+    
+    if (usersDB[user].pass !== pass) {
+        return res.json({ success: false, message: "PIN incorrecto." });
     }
 
-    if (!userPins.has(user) || userPins.get(user) !== pass) {
-        return res.status(401).json({ success: false, message: "Invalid credentials." });
+    res.json({ success: true, balance: usersDB[user].balance });
+});
+
+// 3. VERIFICADOR REAL DE PAGOS BLOCKCHAIN (Anti-Fraude)
+app.post('/api/verify-bitcoin-payment', async (req, res) => {
+    const { user, txid, packageKey } = req.body;
+
+    if (!user || !txid || !packageKey) {
+        return.status(400).json({ success: false, message: "Faltan parámetros de pago." });
     }
 
-    res.json({ success: true, balance: userBalances.get(user) || 0, message: "Login successful." });
-});
-
-app.post('/api/deduct-time-fee', (req, res) => {
-    const { user, amount } = req.body;
-    if (!user || !amount) return res.status(400).json({ success: false });
-
-    const currentBal = userBalances.get(user) || 0;
-    const fee = Number(amount) || 2;
-    if (currentBal < fee) return res.json({ success: false, message: "Insufficient balance." });
-
-    const newBal = currentBal - fee;
-    userBalances.set(user, newBal);
-    res.json({ success: true, newBalance: newBal });
-});
-
-app.post('/api/recharge-ux', (req, res) => {
-    const { user, packageKey, txid } = req.body;
-    if (!user || !packageKey || !uxPackages[packageKey] || !txid) {
-        return res.status(400).json({ success: false, message: "Invalid parameters." });
+    if (!usersDB[user]) {
+        return.status(400).json({ success: false, message: "Usuario no válido." });
     }
 
-    const pkg = uxPackages[packageKey];
-    verifyBitcoinTransaction(txid, pkg.usd, (success, message) => {
-        if (!success) return res.status(400).json({ success: false, message });
+    // Evitar doble gasto o reutilización del mismo TXID
+    if (usedTxids.has(txid)) {
+        return.status(400).json({ success: false, message: "⚠️ Este TXID ya fue utilizado anteriormente." });
+    }
 
-        const currentBalance = userBalances.get(user) || 0;
-        const newBalance = currentBalance + pkg.ux;
-        userBalances.set(user, newBalance);
-        res.json({ success: true, newBalance, message: `Recharge success! +${pkg.ux} UX added.` });
-    });
-});
+    try {
+        // Consultar la API pública de Mempool para verificar la transacción en tiempo real
+        const response = await axios.get(`https://mempool.space/api/tx/${txid}`);
+        const txData = response.data;
 
-io.on('connection', (socket) => {
-    socket.on('register_presence', (uxNumber) => {
-        if (activeSessions.has(uxNumber)) {
-            const oldSocketId = activeSessions.get(uxNumber);
-            io.to(oldSocketId).emit('forced_logout', 'Duplicate session detected.');
-        }
-        
-        activeSessions.set(uxNumber, socket.id);
-        socket.uxNumber = uxNumber;
-        socket.join(`ux_${uxNumber}`);
-        io.emit('update_status', { ux: uxNumber, online: true });
-
-        if (offlineMessages.has(uxNumber)) {
-            socket.emit('mailbox_messages', offlineMessages.get(uxNumber));
-        } else {
-            socket.emit('mailbox_messages', []);
-        }
-    });
-
-    socket.on('private_chat', (data) => {
-        const sender = data.senderUx;
-        const target = data.targetUx ? data.targetUx.trim() : "";
-
-        if (!target) {
-            socket.emit('incoming_message', { senderUx: "04UX", text: "⚠️ Target UX required.", time: new Date().toLocaleTimeString() });
-            return;
+        if (!txData || !txData.status) {
+            return.status(400).json({ success: false, message: "La transacción no existe en la red Bitcoin." });
         }
 
-        if (sender !== "0") {
-            const currentBal = userBalances.get(sender) || 0;
-            if (currentBal < 1) {
-                socket.emit('incoming_message', { senderUx: "04UX", text: "⚠️ Insufficient balance (0 UX).", time: new Date().toLocaleTimeString() });
-                return;
+        // Validar que el pago haya sido enviado estrictamente a TU billetera real
+        let paymentFound = false;
+        let totalSatoshisSent = 0;
+
+        txData.vout.forEach(output => {
+            if (output.scriptpubkey_address === REAL_WALLET_ADDRESS) {
+                paymentFound = true;
+                totalSatoshisSent += output.value; // Cantidad en Satoshis
             }
-            userBalances.set(sender, currentBal - 1);
-            socket.emit('update_balance', { balance: currentBal - 1 });
+        });
+
+        if (!paymentFound) {
+            return.status(400).json({ success: false, message: "El pago no fue enviado a la billetera oficial de 04UX." });
         }
 
-        const packet = { senderUx: sender, targetUx: target, text: data.text, time: new Date().toLocaleTimeString() };
-        
-        if (!offlineMessages.has(target)) offlineMessages.set(target, []);
-        offlineMessages.get(target).push(packet);
+        // Mapeo de paquetes a UX acreditados
+        const packageValues = {
+            "250": 250,
+            "500": 500,
+            "1250": 1250,
+            "2500": 2500,
+            "10000": 10000,
+            "100000": 100000
+        };
 
-        const targetSocketId = activeSessions.get(target);
-        if (targetSocketId) {
-            io.to(targetSocketId).emit('incoming_message', packet);
-        }
-        socket.emit('incoming_message', packet);
-    });
+        const uxToAdd = packageValues[packageKey] || 250;
 
-    socket.on('disconnect', () => {
-        if (socket.uxNumber) {
-            activeSessions.delete(socket.uxNumber);
-            io.emit('update_status', { ux: socket.uxNumber, online: false });
-        }
-    });
+        // Registrar TXID como usado
+        usedTxids.add(txid);
+
+        // Acreditar saldo real
+        usersDB[user].balance += uxToAdd;
+
+        res.json({
+            success: true,
+            message: `¡Pago confirmado en la Blockchain! +${uxToAdd} UX acreditados.`,
+            newBalance: usersDB[user].balance
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error al verificar el TXID en la red Bitcoin o transacción inválida." });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`04UX.COM Elite Server online on port ${PORT} - Founder: LENOX JG`);
+app.listen(PORT, () => {
+    console.log(`Servidor 04UX activo en puerto ${PORT}`);
 });
