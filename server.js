@@ -16,17 +16,16 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ==========================================
-// 🚨 CAMBIA ESTA BILLETERA POR TU DIRECCIÓN BTC REAL 🚨
+// 🚨 TU BILLETERA BTC PERSONAL REAL 🚨
 // ==========================================
 const MY_PERSONAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
-
 const verifiedTransactions = new Set();
 
-function verifyBitcoinTransaction(txid, callback) {
-    if (verifiedTransactions.has(txid)) {
-        return callback(false, "TXID already used.");
-    }
+// Control de dispositivos activos (1 sesión por UX)
+const activeSessions = new Map(); // uxNumber -> socketId
 
+function verifyBitcoinTransaction(txid, callback) {
+    if (verifiedTransactions.has(txid)) return callback(false, "TXID already used.");
     const url = `https://blockstream.info/api/tx/${txid}`;
     https.get(url, (res) => {
         let data = '';
@@ -35,24 +34,18 @@ function verifyBitcoinTransaction(txid, callback) {
             try {
                 const tx = JSON.parse(data);
                 if (!tx || !tx.vout) return callback(false, "Invalid transaction.");
-
-                let isValid = false;
-                let total = 0;
+                let isValid = false, total = 0;
                 tx.vout.forEach(out => {
                     if (out.scriptpubkey_address === MY_PERSONAL_BTC_WALLET) {
                         isValid = true;
                         total += out.value;
                     }
                 });
-
                 if (!isValid) return callback(false, "Wallet address mismatch.");
                 if (total < 5000) return callback(false, "Insufficient amount.");
-
                 verifiedTransactions.add(txid);
                 callback(true, "Verified.");
-            } catch (e) {
-                callback(false, "Parsing error.");
-            }
+            } catch (e) { callback(false, "Parsing error."); }
         });
     }).on('error', () => callback(false, "Network error."));
 }
@@ -63,13 +56,9 @@ app.post('/api/verify-payment', (req, res) => {
         return res.json({ success: true, downloadUrl: "/download/04ux-system-package.zip" });
     }
     if (!txid) return res.status(400).json({ success: false, message: "TXID required." });
-
     verifyBitcoinTransaction(txid, (success, message) => {
-        if (success) {
-            res.json({ success: true, downloadUrl: "/download/04ux-system-package.zip" });
-        } else {
-            res.status(400).json({ success: false, message });
-        }
+        if (success) res.json({ success: true, downloadUrl: "/download/04ux-system-package.zip" });
+        else res.status(400).json({ success: false, message });
     });
 });
 
@@ -86,23 +75,46 @@ app.get('/download/04ux-system-package.zip', (req, res) => {
     res.send(zipData);
 });
 
-// RED DE CHAT EN TIEMPO REAL POR NÚMERO UX
+// GESTIÓN DE RED Y ESTADOS EN VIVO (VERDE / ROJO)
 io.on('connection', (socket) => {
-    socket.on('join_ux', (uxNumber) => {
+    socket.on('register_presence', (uxNumber) => {
+        // Validar restricción de 1 solo dispositivo por usuario
+        if (activeSessions.has(uxNumber)) {
+            const oldSocketId = activeSessions.get(uxNumber);
+            io.to(oldSocketId).emit('forced_logout', 'Session opened on another device.');
+        }
+        
+        activeSessions.set(uxNumber, socket.id);
         socket.uxNumber = uxNumber;
         socket.join(`ux_${uxNumber}`);
+        
+        // Broadcast a toda la red que este usuario está en línea (Luz Verde)
+        io.emit('update_status', { ux: uxNumber, online: true });
     });
 
     socket.on('private_chat', (data) => {
-        const packet = { sender: `UX ${data.senderUx}`, text: data.text, time: new Date().toLocaleTimeString() };
+        const packet = { 
+            senderUx: data.senderUx, 
+            targetUx: data.targetUx, 
+            text: data.text, 
+            time: new Date().toLocaleTimeString() 
+        };
+        
         if (data.targetUx && data.targetUx.trim() !== "") {
+            // Enviar al destinatario y al propio emisor al instante
             io.to(`ux_${data.targetUx.trim()}`).to(`ux_${data.senderUx}`).emit('incoming_message', packet);
         } else {
             io.emit('incoming_message', packet);
         }
     });
 
-    socket.on('disconnect', () => {});
+    socket.on('disconnect', () => {
+        if (socket.uxNumber) {
+            activeSessions.delete(socket.uxNumber);
+            // Notificar que se desconectó (Luz Roja)
+            io.emit('update_status', { ux: socket.uxNumber, online: false });
+        }
+    });
 });
 
 const PORT = process.env.PORT || 3000;
