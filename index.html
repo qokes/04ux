@@ -3,171 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>04UX.COM - FUNDADOR LENOX JG</title>
+<title>04UX.COM - FUNDADOR LENOX JG - VIP $9.99 BTC</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:#050a05;color:#b0ffb0;overflow:hidden}
-.cyber-bg{background:radial-gradient(circle at center,#0a1f0a,#000);min-height:100vh;display:flex;align-items:center;justify-content:center}
-.card{background:rgba(10,30,15,0.9);border:2px solid #2fff6a;box-shadow:0 0 30px #2fff6a55;border-radius:20px;padding:30px;width:95%;max-width:420px}
-h1{color:#2fff6a;text-align:center;font-size:2.5rem;letter-spacing:2px}
-.founder{text-align:center;color:#7aff7a;font-size:12px;margin:5px 0 20px}
-input{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:1.5px solid #2fff6a;background:#000;color:#fff;outline:none}
-.btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:bold;cursor:pointer;margin-top:10px}
-.btn-green{background:#2fff6a;color:#000;box-shadow:0 0 15px #2fff6a}
-.btn-outline{background:transparent;border:1.5px solid #2fff6a;color:#2fff6a}
-.langs{display:flex;gap:5px;margin-top:15px;justify-content:center}
-.langs button{background:#111;border:1px solid #2fff6a;color:#2fff6a;padding:5px 10px;border-radius:8px;cursor:pointer}
-#mainApp{display:none;height:100vh}
-.sidebar{width:280px;background:#0a1510;border-right:2px solid #2fff6a;padding:15px;overflow-y:auto}
-.chat{flex:1;display:flex;flex-direction:column;background:#020802}
-.btc-box{background:#000;border:1px solid #2fff6a;padding:12px;border-radius:12px;margin:10px 0;font-size:12px;word-break:break-all}
-.qr{width:180px;margin:10px auto;display:block;border:2px solid #2fff6a;border-radius:12px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Consolas,monospace}
+body{background:#000;color:#00ff88;min-height:100vh;overflow:hidden}
+#bgCanvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-1;background:#000}
+.grid-anim{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-1;opacity:0.12;background-image:linear-gradient(#00ff88 1px,transparent 1px),linear-gradient(90deg,#00ff88 1px,transparent 1px);background-size:60px 60px;animation:gridMove 8s linear infinite}
+@keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(60px,60px)}}
+.cyber{position:relative;z-index:2;width:100vw;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:100%;max-width:1100px;background:rgba(5,20,10,0.92);border:2px solid #00ff88;box-shadow:0 0 60px #00ff8866, inset 0 0 30px #00ff8822;border-radius:24px;padding:25px;backdrop-filter:blur(10px)}
+h1{font-size:3.2rem;text-align:center;color:#00ff88;text-shadow:0 0 25px #00ff88}
+.founder{text-align:center;color:#8affc0;margin-bottom:20px;font-size:12px;letter-spacing:1px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr} h1{font-size:2.2rem}.app{grid-template-columns:1fr!important}}
+input{width:100%;padding:16px;background:#000;border:2px solid #00ff88;border-radius:14px;color:#fff;font-size:16px;margin:8px 0}
+.btn{width:100%;padding:16px;border-radius:14px;font-weight:900;font-size:16px;cursor:pointer;border:none;margin-top:10px}
+.btn-green{background:#00ff88;color:#000;box-shadow:0 0 25px #00ff88}
+.btn-outline{background:transparent;border:2px solid #00ff88;color:#00ff88}
+.btc-box{background:#000;border:2px dashed #00ff88;padding:20px;border-radius:18px;text-align:center}
+.btc-addr{font-size:14px;color:#00ff88;word-break:break-all;background:#001a0e;padding:12px;border-radius:10px;margin:10px 0;display:block;border:1px solid #00ff88}
+.qr{width:220px;margin:15px auto;background:#fff;padding:10px;border-radius:16px;display:block}
+.app{display:none;height:100vh;grid-template-columns:320px 1fr 360px;position:relative;z-index:2}
+.sidebar,.ibox-panel{background:rgba(6,15,10,0.92);border-right:2px solid #00ff88;padding:15px;overflow-y:auto;backdrop-filter:blur(10px)}
+.chat{display:flex;flex-direction:column;background:rgba(0,0,0,0.85)}
+.msg-box{flex:1;overflow-y:auto;padding:15px}
 </style>
 </head>
 <body>
+<canvas id="bgCanvas"></canvas>
+<div class="grid-anim"></div>
 
-<!-- PANTALLA 1: LOGIN REGISTRO FACIL -->
-<div id="loginScreen" class="cyber-bg">
-  <div class="card">
-    <h1>04UX.COM</h1>
-    <div class="founder">FUNDADOR LENOX JG<br>04UX.COM • PLENIUX.COM • DIO3.COM • KIUCRYPTO.COM</div>
-    
-    <label data-tr="uxLabel">Número UX</label>
-    <input id="uxNumber" placeholder="Ej: 773491">
-    
-    <label>PIN</label>
-    <input id="uxPin" type="password" placeholder="•••••">
-    
-    <button class="btn btn-green" onclick="registrar()" data-tr="register">Registrar en 5 segundos</button>
-    <button class="btn btn-outline" onclick="iniciarSesion()" data-tr="login">Iniciar Sesión</button>
-
-    <div class="langs">
-      <button onclick="setLang('es')">ES</button>
-      <button onclick="setLang('en')">EN</button>
-      <button onclick="setLang('pt')">PT</button>
-      <button onclick="setLang('fr')">FR</button>
-      <button onclick="setLang('de')">DE</button>
-    </div>
-    <p style="text-align:center;margin-top:15px;font-size:11px">Protegido E2E • HWID Anti-multicuentas</p>
-  </div>
+<div id="loginScreen" class="cyber">
+<div class="card" style="max-width:520px">
+<h1>04UX.COM</h1>
+<div class="founder">FUNDADOR LENOX JG<br>04UX.COM • PLENIUX.COM • DIO3.COM • KIUCRYPTO.COM</div>
+<input id="uxNumber" placeholder="Crea tu número UX ej: 773491">
+<input id="uxPin" type="password" placeholder="Crea tu PIN">
+<button class="btn btn-green" onclick="registrar()">REGISTRARME AHORA</button>
+<button class="btn btn-outline" onclick="iniciarSesion()">YA TENGO CUENTA - ENTRAR</button>
+<div style="text-align:center;margin-top:12px;font-size:11px">Fondo animado Matrix activo • HWID Anti-multicuentas</div>
+</div>
 </div>
 
-<!-- PANTALLA 2: PAGO VIP $9.99 SOLO BTC -->
-<div id="vipScreen" class="cyber-bg" style="display:none">
-  <div class="card" style="max-width:500px">
-    <h1>VIP $9.99</h1>
-    <div class="founder">PLAN VIP - PAGO SOLO BTC</div>
-    
-    <div style="background:#111;padding:10px;border-radius:10px;margin:10px 0">
-      <p>✓ <span data-tr="feat1">Chat instantáneo sin delay</span></p>
-      <p>✓ <span data-tr="feat2">Recibe mensajes offline (UX IBOX)</span></p>
-      <p>✓ <span data-tr="feat3">Traducción automática</span></p>
-      <p>✓ Auto-eliminado 0.1s al salir / cambiar web</p>
-      <p>✓ NFC - Acercar y Enviar</p>
-    </div>
-
-    <div class="btc-box">
-      <b>DIRECCIÓN BTC OFICIAL 04UX.COM:</b><br>
-      <span id="btcAddr">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</span><br>
-      <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s">
-      <button class="btn btn-outline" onclick="navigator.clipboard.writeText('bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s')">Copiar dirección BTC</button>
-      <p style="margin-top:10px">Monto: $9.99 USD en BTC ≈ 0.00015 BTC</p>
-      <input id="txidInput" placeholder="Pega tu TXID aquí después de pagar">
-      <button class="btn btn-green" onclick="verificarVIP()" data-tr="verify">VERIFICAR PAGO Y ACTIVAR VIP</button>
-    </div>
-    <button class="btn btn-outline" onclick="skipVip()">Continuar sin VIP (limitado)</button>
-  </div>
+<div id="vipScreen" class="cyber" style="display:none">
+<div class="card">
+<h1>VIP $9.99 / MES</h1>
+<div class="founder">PAGO SOLO BITCOIN - FUNDADOR LENOX JG</div>
+<div class="grid2">
+<div>
+<h3 style="color:#00ff88">BENEFICIOS VIP:</h3>
+<p>✓ Chat instantáneo</p>
+<p>✓ Mensajes offline (UX IBOX)</p>
+<p>✓ Traducción ES/EN/PT/FR/DE</p>
+<p>✓ Auto-borrado 0.1s al salir/cambiar web</p>
+<p>✓ NFC Acercar y Enviar</p>
+<br>
+<div style="background:#001a0e;padding:12px;border-radius:12px;border:1px solid #00ff88">
+<p>Precio: <b>$9.99 USD en BTC</b></p>
+<p style="font-size:11px">≈ 0.00015 BTC (auto)</p>
+</div>
+</div>
+<div class="btc-box">
+<h3>PAGA AQUÍ EN BTC:</h3>
+<span class="btc-addr">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</span>
+<img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s">
+<button class="btn btn-outline" onclick="navigator.clipboard.writeText('bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s')">COPIAR DIRECCIÓN BTC</button>
+<input id="txidInput" placeholder="Pega tu TXID después de pagar $9.99">
+<button class="btn btn-green" onclick="verificarVIP()">VERIFICAR Y ACTIVAR VIP</button>
+<button class="btn btn-outline" onclick="skipVip()">Continuar sin VIP</button>
+</div>
+</div>
+</div>
 </div>
 
-<!-- PANTALLA 3: CHAT PRINCIPAL -->
-<div id="mainApp">
-  <div class="sidebar">
-    <h2 data-tr="contacts">CONTACTOS UX</h2>
-    <input id="newUx" placeholder="Agregar UX ej: 882901" style="margin:10px 0">
-    <button class="btn btn-green" onclick="addContact()" data-tr="add">Agregar</button>
-    <div id="contactsList" style="margin-top:15px"></div>
-    <div style="margin-top:20px;font-size:10px">FUNDADOR LENOX JG<br>04UX.COM</div>
-  </div>
-  <div class="chat">
-    <div style="padding:10px;border-bottom:1px solid #2fff6a;display:flex;justify-content:space-between">
-      <span id="chatWith">UX CHAT - Red Viva</span>
-      <span>UX IBOX: <span id="iboxCount">0</span></span>
-    </div>
-    <div id="messages" style="flex:1;overflow-y:auto;padding:15px"></div>
-    <div style="padding:10px;display:flex;gap:8px">
-      <input id="toUx" placeholder="UX destino" style="width:110px">
-      <input id="msgInput" placeholder="Escribe..." style="flex:1">
-      <button class="btn btn-green" style="width:80px" onclick="sendMsg()" data-tr="send">Enviar</button>
-    </div>
-  </div>
+<div id="mainApp" class="app">
+<div class="sidebar">
+<h2>CONTACTOS UX</h2>
+<input id="newUx" placeholder="UX: 882901">
+<button class="btn btn-green" onclick="addContact()">+ AGREGAR UX</button>
+<div id="contactsList" style="margin-top:12px"></div>
+</div>
+<div class="chat">
+<div style="padding:15px;border-bottom:2px solid #00ff88;background:rgba(0,26,14,0.9);display:flex;justify-content:space-between">
+<span id="chatWith">UX CHAT - Red Viva</span><span>● Online</span>
+</div>
+<div id="messages" class="msg-box"></div>
+<div style="padding:12px;border-top:2px solid #00ff88;display:flex;gap:8px;background:rgba(6,15,10,0.9)">
+<input id="toUx" placeholder="UX destino" style="width:110px;margin:0">
+<input id="msgInput" placeholder="Escribe..." style="flex:1;margin:0">
+<button class="btn btn-green" style="width:85px;margin:0" onclick="sendMsg()">ENVIAR</button>
+</div>
+</div>
+<div class="ibox-panel">
+<h2>UX IBOX 📥</h2>
+<p style="font-size:11px;color:#8affc0">Buzón - auto-elimina 0.1s al salir</p>
+<div id="iboxList" style="margin-top:12px"></div>
+<select id="langSelect" onchange="setLang(this.value)" style="width:100%;margin-top:15px;padding:10px;background:#000;color:#00ff88;border:1px solid #00ff88;border-radius:8px">
+<option value="es">ES Español</option><option value="en">EN English</option><option value="pt">PT Português</option><option value="fr">FR Français</option><option value="de">DE Deutsch</option>
+</select>
+</div>
 </div>
 
 <script>
-const OFFICIAL_BTC='bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s';
-let socket = io();
-let myUX = localStorage.myUX || '';
-let currentChat = '';
-let lang = localStorage.lang || 'es';
+const canvas=document.getElementById('bgCanvas');const ctx=canvas.getContext('2d');function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}resize();window.addEventListener('resize',resize);const chars="04UXCOMBTC";const fs=14;let cols=Math.floor(canvas.width/fs);let drops=Array(cols).fill(1);function draw(){ctx.fillStyle="rgba(0,0,0,0.05)";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#00ff88";ctx.font=fs+"px monospace";drops.forEach((y,i)=>{ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fs,y*fs);if(y*fs>canvas.height&&Math.random()>0.975)drops[i]=0;drops[i]++;});}setInterval(draw,35);
 
-const dict={
-  es:{uxLabel:'Número UX',register:'Registrar en 5 segundos',login:'Iniciar Sesión',verify:'VERIFICAR PAGO Y ACTIVAR VIP',contacts:'CONTACTOS UX',add:'Agregar',send:'Enviar',feat1:'Chat instantáneo sin delay',feat2:'Recibe mensajes offline (UX IBOX)',feat3:'Traducción automática'},
-  en:{uxLabel:'UX Number',register:'Register in 5 seconds',login:'Log In',verify:'VERIFY PAYMENT & ACTIVATE VIP',contacts:'UX CONTACTS',add:'Add',send:'Send',feat1:'Instant chat no delay',feat2:'Receive offline messages (UX IBOX)',feat3:'Auto translation'},
-  pt:{uxLabel:'Número UX',register:'Registrar em 5 segundos',login:'Entrar',verify:'VERIFICAR PAGAMENTO E ATIVAR VIP',contacts:'CONTATOS UX',add:'Adicionar',send:'Enviar',feat1:'Chat instantâneo',feat2:'Receba offline',feat3:'Tradução automática'},
-  fr:{uxLabel:'Numéro UX',register:"S'inscrire en 5s",login:'Connexion',verify:'VÉRIFIER ET ACTIVER VIP',contacts:'CONTACTS UX',add:'Ajouter',send:'Envoyer',feat1:'Chat instantané',feat2:'Messages hors ligne',feat3:'Traduction auto'},
-  de:{uxLabel:'UX Nummer',register:'In 5 Sek registrieren',login:'Anmelden',verify:'ZAHLUNG PRÜFEN & VIP AKTIVIEREN',contacts:'UX KONTAKTE',add:'Hinzufügen',send:'Senden',feat1:'Sofort-Chat',feat2:'Offline-Nachrichten',feat3:'Auto-Übersetzung'}
-};
-
-function setLang(l){lang=l;localStorage.lang=l;document.querySelectorAll('[data-tr]').forEach(el=>{let k=el.dataset.tr;if(dict[l][k]) el.innerText=dict[l][k];});}
-
-async function getHWID(){let fp=navigator.userAgent+screen.width+Intl.DateTimeFormat().resolvedOptions().timeZone;let h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(fp));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-
-async function registrar(){
-  let ux=document.getElementById('uxNumber').value;let pin=document.getElementById('uxPin').value;if(!ux||!pin)return alert('Llena UX y PIN');
-  let hwid=await getHWID();
-  let r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uxNumber:ux,pin,hwid})});
-  let d=await r.json();if(!d.ok&&d.error){alert(d.error);return;}
-  myUX=ux;localStorage.myUX=ux;
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('vipScreen').style.display='flex';
-}
-
-function iniciarSesion(){let ux=document.getElementById('uxNumber').value;myUX=ux;localStorage.myUX=ux;socket.emit('ux-login',ux);document.getElementById('loginScreen').style.display='none';document.getElementById('mainApp').style.display='flex';}
-
-async function verificarVIP(){
-  let txid=document.getElementById('txidInput').value;if(!txid)return alert('Pega TXID');
-  let r=await fetch('/api/verify-vip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txid})});
-  let d=await r.json();
-  if(d.success){alert('VIP $9.99 ACTIVADO');document.getElementById('vipScreen').style.display='none';document.getElementById('mainApp').style.display='flex';socket.emit('ux-login',myUX);}
-  else alert(d.error);
-}
-
-function skipVip(){document.getElementById('vipScreen').style.display='none';document.getElementById('mainApp').style.display='flex';socket.emit('ux-login',myUX);}
-
-function addContact(){let ux=document.getElementById('newUx').value;if(!ux)return;let div=document.createElement('div');div.innerText='UX '+ux;div.style.cssText='padding:8px;border:1px solid #2fff6a;margin:5px 0;border-radius:8px;cursor:pointer';div.onclick=()=>{currentChat=ux;document.getElementById('chatWith').innerText='Chateando con UX '+ux;document.getElementById('toUx').value=ux;};document.getElementById('contactsList').appendChild(div);}
-
-function sendMsg(){
-  let to=document.getElementById('toUx').value;let msg=document.getElementById('msgInput').value;if(!to||!msg)return;
-  socket.emit('ux-send',{to,msg,from:myUX});
-  let m=document.getElementById('messages');m.innerHTML+=`<div style="background:#0f2810;margin:5px;padding:8px;border-radius:8px">Tú → UX ${to}: ${msg}</div>`;
-  document.getElementById('msgInput').value='';
-}
-
-socket.on('ux-message',async (d)=>{
-  // traducción automática
-  if(lang!=='es'){
-    try{let r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(d.msg)}&langpair=es|${lang}`);let j=await r.json();d.msg=j.responseData.translatedText;}catch(e){}
-  }
-  let m=document.getElementById('messages');m.innerHTML+=`<div style="background:#000;border:1px solid #2fff6a;margin:5px;padding:8px;border-radius:8px">UX ${d.from}: ${d.msg}</div>`;
-  m.scrollTop=m.scrollHeight;
-});
-
-// Auto-eliminado 0.1s VIP al salir/cambiar web
-function borrar01s(){document.body.style.transition='opacity 0.1s';document.body.style.opacity='0';setTimeout(()=>{localStorage.clear();sessionStorage.clear();document.body.innerHTML='';},100);}
-window.addEventListener('visibilitychange',()=>{if(document.hidden&&localStorage.vip) borrar01s();});
-window.addEventListener('beforeunload',()=>{if(localStorage.vip) borrar01s();});
-
-setLang(lang);
-</script>
-</body>
-</html>
+let socket=io();let myUX=localStorage.myUX||'';let lang=localStorage.lang||'es';
+function setLang(l){lang=l;localStorage.lang=l;}
+async function getHWID(){let fp=navigator.userAgent+screen.width;let h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(fp));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function registrar(){let ux=document.getElementById('uxNumber').value.trim();let pin=document.getElementById('uxPin').value.trim();if(!ux||!pin)return alert('Pon UX y PIN');let hwid=await getHWID();let r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({uxNumber:ux,pin,hwid})});let d=await r.json();if(d.error&&!d.ok)return alert(d.error);myUX=ux;localStorage.myUX=ux;document.getElementById('loginScreen').style.display='none';document.getElementById('vipScreen').style.display='flex';}
+function iniciarSesion(){let ux=document.getElementById('uxNumber').value.trim();if(!ux)return alert('Pon UX');myUX=ux;localStorage.myUX=ux;socket.emit('ux-login',ux);document.getElementById('loginScreen').style.display='none';document.getElementById('mainApp').style.display='grid';}
+async function verificarVIP(){let txid=document.getElementById('txidInput').value.trim();if(!txid)return alert('Pega TXID');let r=await fetch('/api/verify-vip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txid})});let d=await r.json();if(d.success){alert('VIP $9.99 ACTIVADO - FUNDADOR LENOX JG');document.getElementById('vipScreen').style.display='none';document.getElementById('mainApp').style.display='grid';socket.emit('ux-login',myUX);}else alert(d.error||'Error');}
+function skipVip(){document.getElementById('vipScreen').style.display='none';document.getElementById('mainApp').style.display='grid';socket.emit('ux-login',myUX);}
+function addContact(){let ux=document.getElementById('newUx').value.trim();if(!ux)return;let list=document.getElementById('contactsList');let div=document.createElement('div');div.textContent='UX '+ux;div.style.cssText='padding:12px;border:1px solid #00ff88;margin:6px 0;border-radius:10px;cursor:pointer;background:#000';div.onclick=()=>{document.getElementById('chatWith').textContent='Chat con UX '+ux;document.getElementById('toUx').value=ux;};list.appendChild(div);document.getElementById('newUx').value='';}
+function sendMsg(){let to=document.getElementById('toUx').value.trim();let msg=document.getElementById('msgInput').value.trim();if(!to||!msg)return;socket.emit('ux-send',{to,msg,from:myUX});let m=document.getElementById('messages');m.innerHTML+=`<div style="margin:8px 0;padding:12px;background:#002a18;border-left:3px solid #00ff88;border-radius:10px"><b>Tú → UX ${to}:</b> ${msg}</div>`;document.getElementById('msgInput').value='';m.scrollTop=m.scrollHeight;}
+socket.on('ux-message',async d=>{let text=d.msg;if(lang!=='es'){try{let r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(d.msg)}&langpair=es|${lang}`);let j=await r.json();text=j.responseData.translatedText;}catch(e){}}let m=document.getElementById('messages');m.innerHTML+=`<div style="margin:8px 0;padding:12px;background:#001a0e;border:1px solid #00ff88
