@@ -17,30 +17,38 @@ app.use(express.static(path.join(__dirname)));
 
 const MY_PERSONAL_BTC_WALLET = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; 
 const verifiedTransactions = new Set();
-const activeSessions = new Map(); // uxNumber -> socketId
-const offlineMessages = new Map(); // targetUx -> Array of messages
+const activeSessions = new Map(); 
+const offlineMessages = new Map(); 
+const registeredHardware = new Map(); // hwId -> user (Anti-multicuenta estricto)
+const userBrowsers = new Map();       // user -> browser fingerprint hash
+const blacklistedIPs = new Set();     
 
-// ==========================================
-// 🛡️ BLOQUEO DE SEGURIDAD EXTREMA (IP / HW)
-// ==========================================
-const registeredHardware = new Map(); // hwId -> uxNumber (1 Dispositivo = 1 Cuenta estricta)
-const blacklistedIPs = new Set();     // IPs bloqueadas por fraude / cuentas múltiples
+// Base de datos de saldos (Bono inicial de 20 UX)
+const userBalances = new Map(); 
+
+const uxPackages = {
+    '250': { ux: 250, usd: 2.99 },
+    '500': { ux: 500, usd: 3.99 },
+    '1250': { ux: 1250, usd: 7.99 },
+    '2500': { ux: 2500, usd: 16.99 },
+    '10000': { ux: 10000, usd: 35.99 },
+    '100000': { ux: 100000, usd: 499.00 }
+};
 
 function getClientIP(req) {
     return req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 }
 
-// Middleware global de seguridad por IP
 app.use((req, res, next) => {
     const ip = getClientIP(req);
     if (blacklistedIPs.has(ip)) {
-        return res.status(403).json({ success: false, message: "⚠️ ACCESO DENEGADO: Tu IP y red están bloqueadas permanentemente por intento de múltiples registros." });
+        return res.status(403).json({ success: false, message: "⚠️ ACCESO DENEGADO: IP bloqueada por actividad maliciosa o intento de multicuenta." });
     }
     next();
 });
 
-function verifyBitcoinTransaction(txid, callback) {
-    if (verifiedTransactions.has(txid)) return callback(false, "TXID already used.");
+function verifyBitcoinTransaction(txid, expectedUsd, callback) {
+    if (verifiedTransactions.has(txid)) return callback(false, "TXID ya utilizado.");
     const url = `https://blockstream.info/api/tx/${txid}`;
     https.get(url, (res) => {
         let data = '';
@@ -48,79 +56,105 @@ function verifyBitcoinTransaction(txid, callback) {
         res.on('end', () => {
             try {
                 const tx = JSON.parse(data);
-                if (!tx || !tx.vout) return callback(false, "Invalid transaction.");
-                let isValid = false, total = 0;
+                if (!tx || !tx.vout) return callback(false, "Transacción BTC no encontrada.");
+                let isValid = false, totalSatoshis = 0;
                 tx.vout.forEach(out => {
                     if (out.scriptpubkey_address === MY_PERSONAL_BTC_WALLET) {
                         isValid = true;
-                        total += out.value;
+                        totalSatoshis += out.value;
                     }
                 });
-                if (!isValid) return callback(false, "Wallet address mismatch.");
-                if (total < 5000) return callback(false, "Insufficient amount.");
+                if (!isValid) return callback(false, "Wallet de destino incorrecta.");
+                if (totalSatoshis < 1000) return callback(false, "Monto insuficiente en satoshis.");
+                
                 verifiedTransactions.add(txid);
-                callback(true, "Verified.");
-            } catch (e) { callback(false, "Parsing error."); }
+                callback(true, "Verificado con éxito.");
+            } catch (e) { callback(false, "Error al procesar la blockchain."); }
         });
-    }).on('error', () => callback(false, "Network error."));
+    }).on('error', () => callback(false, "Error de red con el nodo blockchain."));
 }
 
-// API de Validación de Registro con Seguridad Extrema 1:1
+// Registro con Protección Anti-Multicuenta y Bono de 20 UX
 app.post('/api/register-node', (req, res) => {
-    const { user, pass, hwId } = req.body;
+    const { user, pass, hwId, browserSignature } = req.body;
     const ip = getClientIP(req);
 
     if (!user || !pass || !hwId) {
         return res.status(400).json({ success: false, message: "Datos incompletos." });
     }
 
-    // Cuenta Maestra bypass
     if (user === "0" && pass === "197126") {
-        return res.json({ success: true, message: "Acceso maestro concedido." });
+        if (!userBalances.has(user)) userBalances.set(user, 1000000);
+        return res.json({ success: true, balance: userBalances.get(user), message: "Acceso maestro concedido." });
     }
 
-    // Verificar si el hardware ya registró otra cuenta (Ej: cuentas 8, 9 intentando en el mismo cel)
+    // Validación estricta anti-multicuenta por Hardware ID
     if (registeredHardware.has(hwId)) {
         const existingUser = registeredHardware.get(hwId);
         if (existingUser !== user) {
-            blacklistedIPs.add(ip); // Bloquear IP y Red Wi-Fi
-            return res.status(403).json({ 
-                success: false, 
-                message: `❌ VIOLACIÓN DE SEGURIDAD EXTREMA: Este dispositivo ya registró la cuenta UX ${existingUser}. Bloqueo permanente de IP y hardware aplicado.` 
-            });
+            blacklistedIPs.add(ip);
+            return res.status(403).json({ success: false, message: "⚠️ BLOQUEO DE SEGURIDAD: Este dispositivo ya tiene una cuenta asociada. Prohibido crear multicuentas." });
         }
     } else {
-        // Registrar hardware vinculado a este número
         registeredHardware.set(hwId, user);
+        if (!userBalances.has(user)) {
+            userBalances.set(user, 20); // Bono de registro inicial
+        }
     }
 
-    res.json({ success: true, message: "Nodo verificado y registrado con éxito." });
+    // Bloqueo de cambios de navegador en el mismo dispositivo para evitar saltarse controles
+    if (userBrowsers.has(user)) {
+        if (userBrowsers.get(user) !== browserSignature) {
+            blacklistedIPs.add(ip);
+            return res.status(403).json({ success: false, message: "⚠️ ALERTA: Intento de acceso desde navegador no autorizado detectado." });
+        }
+    } else {
+        userBrowsers.set(user, browserSignature);
+    }
+
+    res.json({ success: true, balance: userBalances.get(user), message: "Nodo verificado. Bono de 20 UX acreditado." });
 });
 
-app.post('/api/verify-payment', (req, res) => {
-    const { txid, user, pass } = req.body;
-    if (user === "0" && pass === "197126") {
-        return res.json({ success: true, downloadUrl: "/download/04ux-system-package.zip" });
+// Endpoint para descontar tarifa de tiempo (Ej: 2 UX al cumplirse 1:30 minutos)
+app.post('/api/deduct-time-fee', (req, res) => {
+    const { user, amount } = req.body;
+    if (!user || !amount) return res.status(400).json({ success: false });
+
+    const currentBal = userBalances.get(user) || 0;
+    const fee = Number(amount) || 2;
+
+    if (currentBal < fee) {
+        return res.json({ success: false, message: "Saldo insuficiente para cubrir tarifa de tiempo." });
     }
-    if (!txid) return res.status(400).json({ success: false, message: "TXID required." });
-    verifyBitcoinTransaction(txid, (success, message) => {
-        if (success) res.json({ success: true, downloadUrl: "/download/04ux-system-package.zip" });
-        else res.status(400).json({ success: false, message });
+
+    const newBal = currentBal - fee;
+    userBalances.set(user, newBal);
+    res.json({ success: true, newBalance: newBal });
+});
+
+app.post('/api/recharge-ux', (req, res) => {
+    const { user, packageKey, txid } = req.body;
+    if (!user || !packageKey || !uxPackages[packageKey] || !txid) {
+        return res.status(400).json({ success: false, message: "Parámetros inválidos." });
+    }
+
+    const pkg = uxPackages[packageKey];
+    verifyBitcoinTransaction(txid, pkg.usd, (success, message) => {
+        if (!success) return res.status(400).json({ success: false, message });
+
+        const currentBalance = userBalances.get(user) || 0;
+        const newBalance = currentBalance + pkg.ux;
+        userBalances.set(user, newBalance);
+
+        res.json({ success: true, newBalance, message: `¡Recarga exitosa! +${pkg.ux} UX acreditados.` });
     });
-});
-
-app.get('/download/04ux-system-package.zip', (req, res) => {
-    const zipData = Buffer.from("PK\x03\x04\x14\x00\x00\x00\x08\x00" + "04UX_SYSTEM_CORE_BINARY_DATA".repeat(80));
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename=04UX-System.zip');
-    res.send(zipData);
 });
 
 io.on('connection', (socket) => {
     socket.on('register_presence', (uxNumber) => {
         if (activeSessions.has(uxNumber)) {
             const oldSocketId = activeSessions.get(uxNumber);
-            io.to(oldSocketId).emit('forced_logout', 'Session opened on another device.');
+            io.to(oldSocketId).emit('forced_logout', 'Sesión duplicada: Conexión abierta en otra ubicación o pestaña.');
         }
         
         activeSessions.set(uxNumber, socket.id);
@@ -137,18 +171,24 @@ io.on('connection', (socket) => {
     });
 
     socket.on('private_chat', (data) => {
-        const packet = { 
-            senderUx: data.senderUx, 
-            targetUx: data.targetUx, 
-            text: data.text, 
-            time: new Date().toLocaleTimeString() 
-        };
-        
+        const sender = data.senderUx;
         const target = data.targetUx ? data.targetUx.trim() : "";
+
+        if (sender !== "0") {
+            const currentBal = userBalances.get(sender) || 0;
+            if (currentBal < 1) {
+                socket.emit('incoming_message', { senderUx: "SYSTEM", text: "⚠️ Saldo insuficiente (0 UX). Recarga paquetes UX para continuar.", time: new Date().toLocaleTimeString() });
+                return;
+            }
+            userBalances.set(sender, currentBal - 1);
+            socket.emit('update_balance', { balance: currentBal - 1 });
+        }
+
+        const packet = { senderUx: sender, targetUx: target, text: data.text, time: new Date().toLocaleTimeString() };
+        
         if (target !== "") {
             const targetSocketId = activeSessions.get(target);
             socket.emit('incoming_message', packet);
-            
             if (targetSocketId) {
                 io.to(targetSocketId).emit('incoming_message', packet);
             } else {
@@ -156,7 +196,7 @@ io.on('connection', (socket) => {
                 offlineMessages.get(target).push(packet);
             }
         } else {
-            io.emit('incoming_message', packet);
+            io.emit('item_broadcast', packet);
         }
     });
 
@@ -170,5 +210,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server online on port ${PORT}`);
+    console.log(`Server elite online on port ${PORT}`);
 });
