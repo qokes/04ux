@@ -1,71 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>04UX.COM - FUNDADOR LENOX JG - VIP $9.99 BTC REAL</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>04UX.COM - CYBER SYSTEM - FUNDADOR LENOX JG</title>
 <script src="/socket.io/socket.io.js"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Consolas,monospace}body{background:#000;color:#00ff88;overflow:hidden}#bg{position:fixed;inset:0;z-index:-1;background:#000}.cyber{position:relative;z-index:2;width:100vw;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:15px}.card{width:100%;max-width:1150px;background:rgba(5,15,10,0.9);border:2px solid #00ff88;box-shadow:0 0 60px #00ff8855;border-radius:24px;padding:20px;backdrop-filter:blur(10px)}h1{text-align:center;font-size:2.8rem;text-shadow:0 0 20px #00ff88}.founder{text-align:center;font-size:11px;color:#8affc0;margin-bottom:15px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}input{width:100%;padding:15px;margin:7px 0;background:#000;border:2px solid #00ff88;border-radius:12px;color:#fff}.btn{width:100%;padding:15px;border-radius:12px;border:none;font-weight:900;cursor:pointer;margin-top:8px}.g{background:#00ff88;color:#000;box-shadow:0 0 20px #00ff88}.o{background:transparent;border:2px solid #00ff88;color:#00ff88}.btc{word-break:break-all;background:#001a0e;padding:12px;border-radius:10px;border:1px solid #00ff88;text-align:center;margin:8px 0}.qr{width:210px;margin:10px auto;display:block;background:#fff;padding:8px;border-radius:12px}.app{display:none;height:100vh;grid-template-columns:300px 1fr 340px;position:relative;z-index:2}.side,.ibox{background:rgba(6,15,10,0.92);border-right:2px solid #00ff88;padding:12px;overflow:auto}.chat{display:flex;flex-direction:column;background:rgba(0,0,0,0.85)}.msgs{flex:1;overflow:auto;padding:12px}</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Courier New',monospace}
+body{background:#000;color:#00ff88;overflow:hidden}
+#bg{position:fixed;inset:0;z-index:-1}
+#bg2{position:fixed;inset:0;z-index:-1;opacity:0.25;background:repeating-linear-gradient(0deg,transparent,transparent 2px,#00ff88 2px,#00ff88 3px);animation:scan 8s linear infinite}
+@keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+.cyber{position:relative;z-index:2;width:100vw;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:10px}
+.card{width:100%;max-width:620px;background:rgba(0,15,8,0.88);border:2px solid #00ff88;border-radius:24px;padding:18px;backdrop-filter:blur(14px);box-shadow:0 0 40px #00ff8855, inset 0 0 20px #00ff8811}
+.card::before{content:"04UX.COM // CYBER SYSTEM // 04UX.COM";position:absolute;top:-10px;left:20px;background:#00ff88;color:#000;font-size:9px;padding:2px 8px;border-radius:4px;font-weight:900}
+h1{text-align:center;font-size:clamp(2rem,6vw,3rem);text-shadow:0 0 20px #00ff88, 0 0 40px #00ff88;letter-spacing:2px}
+h1 span{color:#00ccff;text-shadow:0 0 20px #00ccff}
+.founder{text-align:center;font-size:9px;color:#8affc0;margin-bottom:8px;line-height:1.3}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tab{flex:1;padding:10px;border-radius:12px;border:2px solid #00ff88;background:transparent;color:#00ff88;font-weight:900;cursor:pointer;font-size:13px}.tab.active{background:#00ff88;color:#000;box-shadow:0 0 20px #00ff88}
+input,select{width:100%;padding:12px;margin:4px 0;background:#000;border:2px solid #00ff88;border-radius:10px;color:#fff;font-size:14px}
+.btn{width:100%;padding:12px;border-radius:10px;border:none;font-weight:900;cursor:pointer;margin-top:6px;font-size:13px;transition:0.2s}.btn:active{transform:scale(0.98)}
+.g{background:#00ff88;color:#000;box-shadow:0 0 15px #00ff88}.o{background:transparent;border:2px solid #00ff88;color:#00ff88}.b{background:linear-gradient(90deg,#00ff88,#00ccff);color:#000;box-shadow:0 0 15px #00ccff}
+.btc{word-break:break-all;background:#001a0e;padding:8px;border-radius:8px;border:1px solid #00ff88;text-align:center;margin:6px 0;font-size:11px}.qr{width:170px;margin:6px auto;display:block;background:#fff;padding:6px;border-radius:10px}
+.app{display:none;height:100vh;grid-template-columns:300px 1fr 340px;position:relative;z-index:2}
+.side,.ibox{background:rgba(0,12,6,0.9);border-right:2px solid #00ff88;padding:10px;overflow:auto}.chat{display:flex;flex-direction:column;background:rgba(0,0,0,0.82)}.msgs{flex:1;overflow:auto;padding:10px}
+.saldo{padding:8px;background:linear-gradient(90deg,#001a0e,#002a18);border:1px solid #00ff88;border-radius:8px;text-align:center;margin-bottom:8px;font-size:12px}
+.terms{max-height:90px;overflow:auto;background:#000;border:1px solid #00ff88;padding:8px;border-radius:8px;font-size:8px;margin:6px 0}
+.manual{background:#000;border:1px dashed #00ff88;padding:8px;border-radius:8px;margin:8px 0;font-size:9px;line-height:1.4}
+.hidden{display:none}
+@media(max-width:900px){.app{grid-template-columns:1fr;grid-template-rows:60px 1fr 60px}.side,.ibox{display:none}.app.mobile-contacts.side{display:block;position:fixed;inset:0;z-index:10}.app.mobile-ibox.ibox{display:block;position:fixed;inset:0;z-index:10}}
+</style>
 </head>
 <body>
-<canvas id="bg"></canvas>
+<canvas id="bg"></canvas><div id="bg2"></div>
 
-<div id="login" class="cyber"><div class="card" style="max-width:520px">
-<h1>04UX.COM ✔</h1><div class="founder">FUNDADOR LENOX JG 👑 | 04UX.COM • PLENIUX.COM • DIO3.COM • KIUCRYPTO.COM<br>SEGURIDAD 0.1s • PAGO BTC REAL • MENSAJE INSTANTÁNEO</div>
-<input id="ux" placeholder="Tu número UX (Dueño: 0)"><input id="pin" type="password" placeholder="Tu PIN (Dueño: 197126)">
-<button class="btn g" onclick="login()">ENTRAR INSTANTÁNEO</button>
-<div style="background:#000;border:1px dashed #00ff88;padding:10px;border-radius:10px;margin-top:12px;text-align:center;font-size:11px"><p>VIP $9.99 SOLO BTC REAL A:</p><p style="color:#00ff88;word-break:break-all">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</p></div>
+<div id="loginScreen" class="cyber"><div class="card" style="position:relative">
+<h1>04<span>UX</span>.COM</h1>
+<div class="founder">⚡ FUNDADOR LENOX JG ⚡<br>04UX.COM • PLENIUX.COM • DIO3.COM • KIUCRYPTO.COM<br>🔒 SEGURIDAD 0.1s | ⚡ MENSAJE RAPIDÍSIMO | 🛡️ ANTI IP/WIFI MULTICUENTA | 🌐 TRADUCIDO</div>
+
+<div class="manual">
+<b>📖 MANUAL RÁPIDO 04UX.COM - CÓMO USAR:</b><br>
+1. REGISTRO: genera UX con botón 🎲 → crea PIN → acepta T&C legal → obtienes 20 UX gratis<br>
+2. CHAT: agrega UX destino → escribe → elige timer ⏱ (auto-borra y descuenta 1 UX) → ENVIAR (llega en 0.01s)<br>
+3. SALDO: cada mensaje, cierre, timer, actualización = -1 UX. Si se acaba → paga VIP $3.99 USD en BTC<br>
+4. VIP: $3.99 = 3 meses ilimitado, luego $3.99 = 2 meses más. Pago real verificado en blockchain a bc1q...<br>
+5. SEGURIDAD: si cambias pestaña, cierras, apagas, actualizas → borra todo 0.1s automático -1 UX<br>
+6. TRADUCCIÓN: mensajes se traducen auto ES/EN/PT/FR/DE<br>
+ES: Bienvenido • EN: Welcome • PT: Bem-vindo • FR: Bienvenue • DE: Willkommen
+</div>
+
+<div class="tabs"><button id="tabL" class="tab active" onclick="showTab('login')">LOGIN</button><button id="tabR" class="tab" onclick="showTab('reg')">REGISTRO +20 UX</button></div>
+
+<div id="pLogin">
+<input id="uxL" placeholder="Tu número UX"><input id="pinL" type="password" placeholder="Tu PIN privado">
+<button class="btn g" onclick="hacerLogin()">⚡ ENTRAR RAPIDÍSIMO</button>
+</div>
+
+<div id="pReg" class="hidden">
+<div style="display:flex;gap:6px"><button class="btn b" style="flex:1" onclick="genUX()">🎲 UX PREDETERMINADO</button><button class="btn o" style="flex:1" onclick="genPIN()">🔑 PIN ALEATORIO</button></div>
+<input id="uxR" placeholder="Crea tu UX (6 dígitos)"><input id="pinR" type="password" placeholder="Crea tu PIN seguro"><input id="refR" placeholder="Referido (opcional)">
+<div style="background:linear-gradient(90deg,#001a0e,#002a18);border:1px solid #00ff88;padding:8px;border-radius:8px;text-align:center"><p style="color:#00ff88;font-size:12px">🎁 +20 UX SALDO BIENVENIDA</p><p style="font-size:8px">Anti multicuenta: máx 3 cuentas por WiFi/IP • Antispam activo</p></div>
+<div class="terms"><b>TÉRMINOS LEGAL 04UX.COM - OBLIGATORIO:</b><br>1. App 100% legal, NO para daño, NO ilegal, NO drogas, NO armas, NO acoso.<br>2. Timer y seguridad 0.1s: al actualizar/cerrar/salir/cambiar pestaña/apagar = -1 UX y borrado total 0.1s.<br>3. 20 UX gratis, luego VIP $3.99 USD en BTC = 3 meses ilimitado, luego $3.99 = 2 meses más.<br>4. Pagos BTC reales a bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s no reembolsables.<br>5. Fundador LENOX JG no responsable por mal uso.<br>6. Al registrarte declaras uso legal.</div>
+<label style="display:flex;gap:6px;font-size:9px;align-items:center;margin:6px 0"><input type="checkbox" id="terms" style="width:16px"> Acepto T&C: NO daño, NO ilegal, uso responsable</label>
+<button class="btn g" onclick="hacerReg()">🚀 REGISTRARME +20 UX - CYBER SYSTEM</button>
+</div>
+<div style="background:#000;border:1px dashed #00ff88;padding:6px;border-radius:8px;margin-top:8px;text-align:center;font-size:9px">💰 Pagos reales $3.99 USD en BTC: bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s | 04UX.COM CYBER</div>
 </div></div>
 
-<div id="vip" class="cyber" style="display:none"><div class="card">
-<h1>VIP $9.99 REAL ✔</h1><div class="founder">PAGO VERIFICADO EN BLOCKCHAIN A bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</div>
-<div class="grid2">
-<div><p>✓ Mensajes instantáneos 0 delay</p><p>✓ Buzón UX IBOX offline</p><p>✓ Traducción ES/EN/PT/FR/DE</p><p>✓ Auto-borrado 0.1s al salir/cambiar/apagar</p><p>✓ Verificado ✔ artista</p><p>✓ NFC Acercar y Enviar</p><div style="margin-top:12px;background:#001a0e;padding:10px;border-radius:10px"><p id="btcPrice">Precio BTC: cargando...</p><p id="btcAmount">Monto: ~0.00015 BTC</p></div><button class="btn g" onclick="entrarChat()">ENTRAR AL CHAT (SI YA PAGASTE, VERIFICA ABAJO)</button></div>
-<div style="border:2px dashed #00ff88;padding:12px;border-radius:15px;background:#000;text-align:center"><span class="btc" id="btcAddr">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</span><img id="qrImg" class="qr" src=""><input id="txid" placeholder="Pega tu TXID real de BTC"><button class="btn g" onclick="verificarBTC()">VERIFICAR PAGO REAL Y ACTIVAR VIP</button><button class="btn o" onclick="navigator.clipboard.writeText('bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s')">COPIAR DIRECCIÓN BTC</button></div>
+<div id="vip" class="cyber" style="display:none"><div class="card" style="max-width:680px">
+<h1>VIP $3.99 USD</h1>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div><div class="saldo">Saldo: <span id="saldoTxt">0 UX</span><br><span id="vipInfo">Bono agotado</span></div><p style="font-size:11px" id="vipDesc">🎁 Bono 20 UX agotado<br>💎 Paga $3.99 USD en BTC = 3 meses VIP<br>🔄 Luego $3.99 = 2 meses más<br>⚡ Mensajes rapidísimos ilimitados</p><button class="btn g" onclick="entrarChat()">ENTRAR CON SALDO</button></div>
+<div style="border:2px dashed #00ff88;padding:10px;border-radius:12px;background:#000;text-align:center"><span class="btc">bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s</span><img id="qrImg" class="qr" src=""><p id="btcPrice" style="font-size:9px"></p><select id="planSel"><option value="3months">3 MESES VIP $3.99 USD BTC</option><option value="2months">Renovación 2 MESES $3.99</option></select><input id="txid" placeholder="Pega TXID BTC real $3.99"><button class="btn g" onclick="verificarBTC()">✅ VERIFICAR PAGO REAL SEGURO</button></div>
 </div>
 </div></div>
 
 <div id="app" class="app">
-<div class="side"><h3>CONTACTOS UX</h3><input id="newUx" placeholder="Agregar UX"><button class="btn g" onclick="addContact()">+ AGREGAR</button><div id="list"></div><div style="margin-top:15px;font-size:10px">REY UX 0 👑 ✔<br>FUNDADOR LENOX JG</div></div>
-<div class="chat"><div style="padding:12px;border-bottom:2px solid #00ff88;display:flex;justify-content:space-between"><span id="chatWith">Chat Instantáneo 0.1s Seguro</span><span id="badge"></span></div><div id="msgs" class="msgs"></div><div style="padding:10px;display:flex;gap:6px;border-top:2px solid #00ff88"><input id="to" placeholder="UX" style="width:80px;margin:0"><input id="msg" placeholder="Mensaje instantáneo..." style="flex:1;margin:0"><button class="btn g" style="width:80px;margin:0" onclick="send()">ENVIAR</button></div></div>
-<div class="ibox"><h3>UX IBOX 📥</h3><p style="font-size:10px">Buzón offline auto 0.1s</p><div id="ibox"></div><select id="lang" onchange="setLang(this.value)" style="width:100%;margin-top:12px;padding:10px;background:#000;color:#00ff88;border:1px solid #00ff88;border-radius:8px"><option value="es">ES</option><option value="en">EN</option><option value="pt">PT</option><option value="fr">FR</option><option value="de">DE</option></select></div>
+<div class="side"><div class="saldo">💎 <span id="saldoSide">0 UX</span><br><span id="badge"></span><br><span id="vipDays" style="font-size:10px"></span></div><h3>CONTACTOS UX</h3><input id="newUx" placeholder="Agregar UX"><button class="btn g" onclick="addContact()">+ AGREGAR</button><div id="list"></div><button class="btn o" style="margin-top:10px" onclick="document.getElementById('app').classList.remove('mobile-contacts')">← Volver chat</button></div>
+<div class="chat"><div style="padding:10px;border-bottom:2px solid #00ff88;display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:12px">04UX.COM ⚡ 0.01s</span><br><span id="chatWith" style="font-size:10px"></span></div><div style="display:flex;gap:4px;align-items:center"><select id="timerSel" style="width:90px;margin:0;padding:5px;font-size:11px"><option value="0">Sin timer</option><option value="5">⏱5s -1 UX</option><option value="10">⏱10s -1 UX</option><option value="30">⏱30s -1 UX</option><option value="60">⏱60s -1 UX</option></select><button class="btn o" style="width:auto;padding:6px 8px;margin:0;font-size:10px" onclick="document.getElementById('app').classList.add('mobile-contacts')">CONTACTOS</button></div></div><div id="msgs" class="msgs"></div><div style="padding:8px;display:flex;gap:5px;border-top:2px solid #00ff88"><input id="to" placeholder="UX" style="width:70px;margin:0"><input id="msg" placeholder="Mensaje rapidísimo..." style="flex:1;margin:0"><button class="btn g" style="width:70px;margin:0" onclick="send()">⚡</button></div></div>
+<div class="ibox"><h3>IBOX 📥</h3><div id="ibox"></div><p style="font-size:8px;margin-top:8px">Timer/cierre/actualización = -1 UX<br>IP/WiFi máx 3 cuentas • Antispam 0.5s<br>04UX.COM CYBER</p><button class="btn o" style="margin-top:8px" onclick="document.getElementById('app').classList.remove('mobile-ibox')">← Chat</button></div>
 </div>
 
 <script>
-const c=document.getElementById('bg'),x=c.getContext('2d');function rs(){c.width=innerWidth;c.height=innerHeight}rs();onresize=rs;let p=[];for(let i=0;i<120;i++)p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*0.7,vy:(Math.random()-.5)*0.7,r:Math.random()*2+1});(function a(){x.clearRect(0,0,c.width,c.height);x.fillStyle="#00ff88";p.forEach(o=>{o.x+=o.vx;o.y+=o.vy;if(o.x<0||o.x>c.width)o.vx*=-1;if(o.y<0||o.y>c.height)o.vy*=-1;x.beginPath();x.arc(o.x,o.y,o.r,0,7);x.fill();});p.forEach((a,i)=>{p.slice(i+1).forEach(b=>{let d=Math.hypot(a.x-b.x,a.y-b.y);if(d<120){x.strokeStyle=`rgba(0,255,136,${(1-d/120)*0.18})`;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}})});requestAnimationFrame(a)})();
+const c=document.getElementById('bg'),x=c.getContext('2d');function rs(){c.width=innerWidth;c.height=innerHeight}rs();onresize=rs;let p=[];for(let i=0;i<140;i++)p.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*0.9,vy:(Math.random()-.5)*0.9,r:Math.random()*2+1.5,op:Math.random()*0.8+0.2});(function a(){x.clearRect(0,0,c.width,c.height);x.fillStyle="#00ff88";p.forEach(o=>{o.x+=o.vx;o.y+=o.vy;if(o.x<0||o.x>c.width)o.vx*=-1;if(o.y<0||o.y>c.height)o.vy*=-1;x.globalAlpha=o.op;x.beginPath();x.arc(o.x,o.y,o.r,0,7);x.fill();});x.globalAlpha=1;p.forEach((a,i)=>{p.slice(i+1).forEach(b=>{let d=Math.hypot(a.x-b.x,a.y-b.y);if(d<130){x.strokeStyle=`rgba(0,255,136,${(1-d/130)*0.25})`;x.lineWidth=d<60?1:0.4;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}})});requestAnimationFrame(a)})();
 
-let socket=io(),myUX="",myRole="",lang="es";
-function setLang(l){lang=l}
-
-async function login(){
- let ux=document.getElementById('ux').value.trim(),pin=document.getElementById('pin').value.trim();if(!ux||!pin)return alert("Llena UX y PIN");
+let socket=io(),myUX="",saldo=0;
+function showTab(t){ document.getElementById('pLogin').classList.toggle('hidden', t!=='login'); document.getElementById('pReg').classList.toggle('hidden', t!=='reg'); document.getElementById('tabL').classList.toggle('active', t==='login'); document.getElementById('tabR').classList.toggle('active', t==='reg'); }
+function genUX(){ let ux=Math.floor(100000+Math.random()*900000); document.getElementById('uxR').value=ux; document.getElementById('uxL').value=ux; }
+function genPIN(){ let pin=Math.floor(1000+Math.random()*9000); document.getElementById('pinR').value=pin; document.getElementById('pinL').value=pin; }
+async function hacerReg(){
+ let ux=document.getElementById('uxR').value.trim(),pin=document.getElementById('pinR').value.trim(),acc=document.getElementById('terms').checked;
+ if(!ux||!pin) return alert("Falta UX PIN"); if(!acc) return alert("Acepta T&C legal");
+ let r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ux,pin,acceptedTerms:acc})});
+ let d=await r.json(); if(d.error) return alert("🚫 "+d.error);
+ alert(`✅ REGISTRO CYBER OK UX ${ux} +20 UX GRATIS`); document.getElementById('uxL').value=ux; document.getElementById('pinL').value=pin; showTab('login');
+}
+async function hacerLogin(){
+ let ux=document.getElementById('uxL').value.trim(),pin=document.getElementById('pinL').value.trim();
+ if(!ux||!pin) return alert("Falta UX PIN");
  let r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ux,pin})});
- let d=await r.json();if(d.error)return alert(d.error);
- myUX=ux;myRole=d.role;
- if(d.role==="REY"){ document.getElementById('login').style.display='none';document.getElementById('app').style.display='grid';document.getElementById('badge').innerHTML="UX 0 👑 ✔ VERIFICADO ARTISTA";document.getElementById('chatWith').innerHTML="REY DUEÑO UX 0 👑 ✔"; socket.emit('ux-login',ux); return; }
- document.getElementById('login').style.display='none';document.getElementById('vip').style.display='flex';
- // cargar precio BTC real
- try{ let pr=await fetch('https://mempool.space/api/v1/prices').then(r=>r.json()); document.getElementById('btcPrice').textContent=`BTC: $${pr.USD}`; let amt=(9.99/pr.USD).toFixed(8); document.getElementById('btcAmount').textContent=`Monto: ${amt} BTC`; let addr='bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s'; document.getElementById('qrImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=bitcoin:${addr}?amount=${amt}`;}catch(e){}
+ let d=await r.json(); if(d.error) return alert(d.error);
+ myUX=ux; saldo=d.saldoUX;
+ document.getElementById('saldoSide').textContent=saldo+" UX"; document.getElementById('saldoTxt').textContent=saldo+" UX";
+ if(d.role==="REY"){ document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='grid';document.getElementById('badge').innerHTML="REY 👑 ✔ CYBER"; document.getElementById('vipDays').textContent="VIP ILIMITADO OWNER"; socket.emit('ux-login',ux); return; }
+ if(d.isVip){ document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='grid'; document.getElementById('badge').textContent="VIP ✔"; document.getElementById('vipDays').textContent=`VIP ${d.daysLeft} días`; socket.emit('ux-login',ux); return; }
+ if(saldo>0){ document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='grid'; document.getElementById('vipDays').textContent=`Bono: ${saldo} UX (-1 por cierre/timer)`; socket.emit('ux-login',ux); }
+ else { document.getElementById('loginScreen').style.display='none';document.getElementById('vip').style.display='flex'; try{ let pr=await fetch('https://mempool.space/api/v1/prices').then(r=>r.json()); document.getElementById('btcPrice').textContent=`$3.99 USD = ${(3.99/pr.USD).toFixed(8)} BTC | Bloqueo IP/WiFi activo`; let amt=(3.99/pr.USD).toFixed(8); document.getElementById('qrImg').src=`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=bitcoin:bc1qep3ntxf6lz037ny04706u88jsl364p0ny4776s?amount=${amt}`;}catch(e){} }
 }
-
 function entrarChat(){ document.getElementById('vip').style.display='none'; document.getElementById('app').style.display='grid'; socket.emit('ux-login',myUX); }
-
-async function verificarBTC(){
- let txid=document.getElementById('txid').value.trim(); if(!txid) return alert("Pega TXID real");
- let r=await fetch('/api/verify-btc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txid, ux:myUX})});
- let d=await r.json(); if(d.success){ alert(`✅ PAGO REAL VERIFICADO ${d.amountBtc} BTC A TU BILLETERA`); entrarChat(); } else alert(d.error);
+async function verificarBTC(){ let txid=document.getElementById('txid').value.trim(),plan=document.getElementById('planSel').value; if(!txid) return alert("TXID"); let r=await fetch('/api/verify-btc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txid, ux:myUX, plan})}); let d=await r.json(); if(d.success){ alert(`✅ ${plan==='3months'?'3 MESES VIP':'2 MESES VIP'} $3.99 VERIFICADO SEGURO`); entrarChat(); } else alert(d.error); }
+function addContact(){let ux=document.getElementById('newUx').value.trim();if(!ux)return;let div=document.createElement('div');div.textContent="UX "+ux;div.style.cssText="padding:8px;border:1px solid #00ff88;margin:4px 0;border-radius:6px;cursor:pointer;background:#000;font-size:12px";div.onclick=()=>{document.getElementById('to').value=ux;document.getElementById('app').classList.remove('mobile-contacts');};document.getElementById('list').appendChild(div);document.getElementById('newUx').value='';}
+function send(){let to=document.getElementById('to').value.trim(),msg=document.getElementById('msg').value.trim();if(!to||!msg)return;let timer=parseInt(document.getElementById('timerSel').value);socket.emit('ux-send',{to,msg,from:myUX,timer});let m=document.getElementById('msgs');let id='m'+Date.now();m.innerHTML+=`<div id="${id}" style="padding:8px;background:linear-gradient(90deg,#002a18,#003a20);margin:4px 0;border-radius:8px;border-left:3px solid #00ff88"><b>Tú → ${to} ${timer?`⏱${timer}s -1 UX`:''}:</b> ${msg}<br><span style="font-size:8px">⚡ 0.01s entregado</span></div>`;if(timer>0){let el=document.getElementById(id);let left=timer;let iv=setInterval(()=>{left--; if(el) el.querySelector('b').textContent=`Tú → ${to} ⏱${left}s -1 UX:`; if(left<=0){ clearInterval(iv); if(el) el.remove(); fetch('/api/discount-ux',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ux:myUX, reason:'timer'})}).then(r=>r.json()).then(d=>{ saldo=d.saldoUX; document.getElementById('saldoSide').textContent=saldo+" UX"; }); }},1000);}document.getElementById('msg').value='';m.scrollTop=m.scrollHeight;}
+socket.on('ux-message',d=>{let m=document.getElementById('msgs');let id='m'+Date.now()+Math.random();m.innerHTML+=`<div id="${id}" style="padding:8px;background:#001a0e;margin:4px 0;border-radius:8px;border:1px solid #00ff88"><b>UX ${d.from} ${d.verified?'✔':''} ${d.timer?`⏱${d.timer}s`:''}:</b> ${d.msg}<br><span style="font-size:8px">⚡ Instantáneo | 🌐 Traducido auto</span></div>`;if(d.timer>0){let el=document.getElementById(id);let left=d.timer;let iv=setInterval(()=>{left--; if(el) el.querySelector('b').textContent=`UX ${d.from} ⏱${left}s:`; if(left<=0){ clearInterval(iv); if(el) el.remove(); }},1000);}m.scrollTop=m.scrollHeight;});
+socket.on('saldo-update',s=>{ saldo=s; document.getElementById('saldoSide').textContent=s+" UX"; if(document.getElementById('saldoTxt')) document.getElementById('saldoTxt').textContent=s+" UX"; });
+socket.on('error-vip',m=>{ alert("⚠️ "+m); document.getElementById('vip').style.display='flex'; document.getElementById('app').style.display='none'; });
+socket.on('offline-messages',msgs=>{let b=document.getElementById('ibox');msgs.forEach(x=>{b.innerHTML+=`<div style="padding:6px;background:#000;border:1px dashed #00ff88;margin:4px 0;border-radius:5px;font-size:11px">UX ${x.from}: ${x.msg}</div>`;});});
+function borrar01s(){
+ fetch('/api/discount-ux',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ux:myUX, reason:'close'})});
+ try{ socket.emit('ux-logout-01s'); socket.disconnect(); }catch(e){}
+ document.body.style.transition="opacity 0.1s"; document.body.style.opacity="0";
+ setTimeout(()=>{ localStorage.clear(); sessionStorage.clear(); document.body.innerHTML='<div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#000;color:#00ff88"><div style="text-align:center"><h1>04UX.COM</h1><p>🔒 0.1s BORRADO SEGURO<br>-1 UX DESCONTADO<br>04UX.COM CYBER SYSTEM</p><button onclick="location.reload()" style="margin-top:12px;padding:10px;background:#00ff88;color:#000;border:none;border-radius:8px;font-weight:900">VOLVER A ENTRAR</button></div></div>'; },100);
 }
-
-function addContact(){let ux=document.getElementById('newUx').value.trim();if(!ux)return;let div=document.createElement('div');div.innerHTML="UX "+ux+(ux==="0"?" 👑 ✔":"");div.style.cssText="padding:10px;border:1px solid #00ff88;margin:5px 0;border-radius:8px;cursor:pointer;background:#000";div.onclick=()=>{document.getElementById('to').value=ux;document.getElementById('chatWith').textContent="Chat con UX "+ux;};document.getElementById('list').appendChild(div);document.getElementById('newUx').value='';}
-function send(){let to=document.getElementById('to').value.trim(),msg=document.getElementById('msg').value.trim();if(!to||!msg)return;socket.emit('ux-send',{to,msg,from:myUX});let m=document.getElementById('msgs');m.innerHTML+=`<div style="padding:10px;background:#002a18;margin:5px 0;border-radius:8px;border-left:3px solid #00ff88"><b>Tú → ${to}:</b> ${msg}</div>`;document.getElementById('msg').value='';m.scrollTop=m.scrollHeight;}
-socket.on('ux-message',async d=>{let txt=d.msg;if(lang!=='es'){try{let r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(d.msg)}&langpair=es|${lang}`);let j=await r.json();txt=j.responseData.translatedText;}catch(e){}}let m=document.getElementById('msgs');m.innerHTML+=`<div style="padding:10px;background:#001a0e;margin:5px 0;border-radius:8px;border:1px solid #00ff88"><b>UX ${d.from}${d.role==="REY"?" 👑":""}${d.verified?" ✔":""}:</b> ${txt}</div>`;m.scrollTop=m.scrollHeight;});
-socket.on('offline-messages',msgs=>{let b=document.getElementById('ibox');msgs.forEach(x=>{b.innerHTML+=`<div style="padding:8px;background:#000;border:1px dashed #00ff88;margin:5px 0;border-radius:6px;font-size:12px">OFFLINE UX ${x.from}: ${x.msg}</div>`;});});
-socket.on('error-vip',m=>alert(m));
-
-// SEGURIDAD 0.1s
-function borrar01s(){try{socket.emit('ux-logout-01s');socket.disconnect();}catch(e){}document.body.style.transition="opacity 0.1s";document.body.style.opacity="0";setTimeout(()=>{localStorage.clear();sessionStorage.clear();document.getElementById('msgs').innerHTML="";document.getElementById('ibox').innerHTML="";document.body.innerHTML='<div style="display:flex;height:100vh;align-items:center;justify-content:center;background:#000;color:#00ff88"><div style="text-align:center"><h1>04UX.COM</h1><p>SESIÓN CERRADA 0.1s - TODO ELIMINADO</p><button onclick="location.reload()" style="margin-top:15px;padding:12px;background:#00ff88;color:#000;border:none;border-radius:10px;font-weight:900">VOLVER A ENTRAR</button></div></div>';},100);}
-document.addEventListener('visibilitychange',()=>{if(document.hidden) borrar01s();});
-window.addEventListener('pagehide', borrar01s);
-window.addEventListener('beforeunload', borrar01s);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) borrar01s(); });
+window.addEventListener('pagehide', borrar01s); window.addEventListener('beforeunload', borrar01s);
 </script>
 </body>
 </html>
